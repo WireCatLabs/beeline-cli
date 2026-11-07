@@ -1,0 +1,54 @@
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Synthetic values used by tests and documentation"
+regexTarget = "match"
+regexes = [
+  # The fixtures' numbers: 7 then zeros, never a real Russian mobile number (those start 79).
+  '''\+?7000000000\d''',
+]
+paths = ['''pnpm-lock\.yaml''']
+
+# gitleaks' own rules know Google API keys (AIza…) only. Google calls its OAuth tokens opaque, so these prefixes are
+# the observed format, not a promised one: ya29. in Apigee's sample access token, 1// in the sample refresh token of
+# the web-server OAuth guide.
+[[rules]]
+id = "google-oauth-access-token"
+description = "Google OAuth 2.0 access token"
+regex = '''\b(ya29\.[A-Za-z0-9._-]{20,})'''
+secretGroup = 1
+keywords = ["ya29."]
+
+[[rules]]
+id = "google-oauth-refresh-token"
+description = "Google OAuth 2.0 refresh token"
+regex = '''(?:^|[^A-Za-z0-9/])(1//[A-Za-z0-9_-]{30,})'''
+secretGroup = 1
+entropy = 3.5
+keywords = ["1//"]
+
+# Beeline documents no format for its API token, so it is matched by the header it travels in and by the variable
+# that holds it, not by its shape.
+[[rules]]
+id = "beeline-api-token"
+description = "Beeline Cloud PBX API token: reads and deletes every recording of the PBX"
+regex = '''(?i)(?:X-MPBX-API-AUTH-TOKEN|BEELINE_TOKEN)["'\s:=]{1,10}([A-Za-z0-9_\-]{16,})'''
+secretGroup = 1
+keywords = ["x-mpbx-api-auth-token", "beeline_token"]
+
+# A client's number is what the store keeps for each call; it must not reach a fixture, a log or a document.
+[[rules]]
+id = "phone-number"
+description = "A phone number: a client's or a manager's"
+regex = '''(?i)(?:phone|msisdn|number|abonent|userId|номер|телефон)["'\s:=]{1,10}(\+?[1-9]\d{9,14})'''
+secretGroup = 1
+tags = ["pii"]
+
+[[rules]]
+id = "phone-number-ru"
+description = "A Russian mobile number written with +7"
+regex = '''(\+7[\s(-]{0,2}9\d{2}[\s)-]{0,2}\d{3}[\s-]?\d{2}[\s-]?\d{2})'''
+secretGroup = 1
+tags = ["pii"]
+
