@@ -1,3 +1,4 @@
+import { CliError } from "@wirecat/cli-base"
 import type { Pcm } from "@wirecat/cli-core/speech"
 import { afterEach, beforeEach, expect, it } from "vitest"
 import type { Speech } from "./commands/transcribe.js"
@@ -123,4 +124,22 @@ it("says the speech model is missing as not_found, with its own reason", async (
     speech: speech({ isInstalled: () => false }),
   })
   expect(JSON.parse(missing.err).error).toMatchObject({ code: "not_found", reason: "model.not-downloaded" })
+})
+
+it("a deadline that stops the speech engine mid-call answers what it finished, not a failed call", async () => {
+  const deadline = new AbortController()
+  const recognizeLocalPieces = (async (_model: string, _pcm: Pcm, options?: { signal?: AbortSignal }) => {
+    deadline.abort(new DOMException("the run's deadline passed", "TimeoutError"))
+    if (options?.signal?.aborted) throw new CliError("timeout", "local speech recognition was interrupted")
+    return []
+  }) as Speech["recognizeLocalPieces"]
+  const done = await ran(["work", "meetings", "transcribe", "--replace", "--json"], {
+    speech: speech({ recognizeLocalPieces }),
+    signal: deadline.signal,
+  })
+  expect(done.code, done.err).toBe(0)
+  const answer = JSON.parse(done.out)
+  expect(answer.item).toMatchObject({ transcribed: 0, failed: [], stopped: true, remaining: 2 })
+  expect(answer.meta.complete).toBe(false)
+  expect(answer.next[0]).toMatchObject({ command: "meetings transcribe" })
 })

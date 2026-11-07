@@ -70,13 +70,14 @@ export const transcribeCalls = async (
       report.audio_seconds += Math.round((call.durationMs ?? 0) / 1000)
       options.progress?.(`${index + 1}/${Math.min(pending.length, options.limit)} meeting ${call.id} transcribed`)
     } catch (error) {
-      if (isCliError(error) && error.code === "cancelled") {
-        // The run's deadline stops a download halfway; the calls finished so far are the answer, not a failure.
-        if (!options.signal?.aborted) throw error
+      // The run's deadline stops a download or a recognition halfway, whatever error that throws; the calls finished
+      // so far are the answer, not a failure.
+      if (options.signal?.aborted) {
         report.remaining = pending.length - index
         report.stopped = true
         break
       }
+      if (isCliError(error) && error.code === "cancelled") throw error
       const reason = isCliError(error) ? (error.details.reason ?? error.code) : "unexpected"
       report.failed.push({
         meeting: call.id,

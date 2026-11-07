@@ -7,7 +7,7 @@ ran it · ⛔ not tested offline, with the reason and where it is checked instea
 Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 [TESTING.md](TESTING.md) for how, and for the states and failures that cut across commands.
 
-**68 ✅ · 65 ⛔ · 0 ❌** — 41 commands, 92 options.
+**73 ✅ · 61 ⛔ · 0 ❌** — 41 commands, 93 options.
 
 | Command | Option | | Note |
 |---|---|---|---|
@@ -34,11 +34,11 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | `meetings summary` |  | ⛔ | cli-core's shared meetings command, tested in cli-core's src/meetings/cli; beeline supplies only the store and the call source (src/calls.test.ts) |
 | `meetings summary` | `--json` | ⛔ | cli-core's shared meetings command, tested in cli-core's src/meetings/cli; beeline supplies only the store and the call source (src/calls.test.ts) |
 | `meetings summary` | `--jsonl` | ⛔ | cli-core's shared meetings command, tested in cli-core's src/meetings/cli; beeline supplies only the store and the call source (src/calls.test.ts) |
-| `meetings export` |  | ⛔ | cli-core's shared meetings command, tested in cli-core's src/meetings/cli; beeline supplies only the store and the call source (src/calls.test.ts) |
+| `meetings export` |  | ✅ |  |
 | `meetings export` | `--format` | ⛔ | cli-core's shared meetings command, tested in cli-core's src/meetings/cli; beeline supplies only the store and the call source (src/calls.test.ts) |
 | `meetings export` | `--transcript-id` | ⛔ | cli-core's shared meetings command, tested in cli-core's src/meetings/cli; beeline supplies only the store and the call source (src/calls.test.ts) |
-| `meetings export` | `--output` | ⛔ | cli-core's shared meetings command, tested in cli-core's src/meetings/cli; beeline supplies only the store and the call source (src/calls.test.ts) |
-| `meetings export` | `--json` | ⛔ | cli-core's shared meetings command, tested in cli-core's src/meetings/cli; beeline supplies only the store and the call source (src/calls.test.ts) |
+| `meetings export` | `--output` | ✅ |  |
+| `meetings export` | `--json` | ✅ |  |
 | `meetings export` | `--jsonl` | ⛔ | cli-core's shared meetings command, tested in cli-core's src/meetings/cli; beeline supplies only the store and the call source (src/calls.test.ts) |
 | `meetings people` |  | ✅ |  |
 | `meetings people` | `--json` | ✅ |  |
@@ -51,7 +51,8 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | `meetings sync` | `--json` | ✅ |  |
 | `meetings sync` | `--jsonl` | ⛔ | cli-core's shared meetings command, tested in cli-core's src/meetings/cli; beeline supplies only the store and the call source (src/calls.test.ts) |
 | `meetings sync` | `--since-time` | ✅ |  |
-| `meetings sync` | `--lookback-days` | ⛔ | cli-core's shared meetings command, tested in cli-core's src/meetings/cli; beeline supplies only the store and the call source (src/calls.test.ts) |
+| `meetings sync` | `--lookback-days` | ✅ |  |
+| `meetings sync` | `--rescan` | ✅ |  |
 | `meetings import` |  | ⛔ | cli-core's shared meetings command, tested in cli-core's src/meetings/cli; beeline supplies only the store and the call source (src/calls.test.ts) |
 | `meetings import` | `--json` | ⛔ | cli-core's shared meetings command, tested in cli-core's src/meetings/cli; beeline supplies only the store and the call source (src/calls.test.ts) |
 | `meetings import` | `--jsonl` | ⛔ | cli-core's shared meetings command, tested in cli-core's src/meetings/cli; beeline supplies only the store and the call source (src/calls.test.ts) |

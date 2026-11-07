@@ -1,4 +1,6 @@
-import { existsSync, statSync } from "node:fs"
+import { existsSync, readFileSync, statSync, writeFileSync } from "node:fs"
+import { tmpdir } from "node:os"
+import { join } from "node:path"
 import { Readable } from "node:stream"
 import { memoryKeyring } from "@wirecat/cli-base"
 import type { FetchLike } from "@wirecat/cli-base/http"
@@ -224,4 +226,75 @@ it("a first read of a profile that never synced answers an empty list", async ()
   const listed = await ran(["fresh", "meetings", "list", "--json"])
   expect(listed.code, listed.err).toBe(0)
   expect(JSON.parse(listed.out).items).toEqual([])
+})
+
+it("a sync stopped by its budget keeps what it saved, says how to go on, and the next one picks up the rest", async () => {
+  process.env.BEELINE_TOKEN = "test-token"
+  const calls = [record(51), record(52), record(53)]
+  beeline(() => Response.json(calls))
+  // Eight seconds less cli-core's five-second margin leave room for one meeting at its two seconds a request.
+  const argv = ["partial", "meetings", "sync", "--since-time", "2026-10-01T00:00:00Z", "--timeout", "8s", "--json"]
+  const stopped = await ran(argv)
+  expect(stopped.code, stopped.err).toBe(0)
+  const answer = JSON.parse(stopped.out)
+  expect(answer.item).toMatchObject({ meetings: 1, stopped: "requests", remaining: 2 })
+  expect(answer.meta.complete).toBe(false)
+  expect(answer.next[0]).toMatchObject({ command: "meetings sync", safe_to_auto_execute: true })
+
+  const fetch = beeline(() => Response.json(calls))
+  const resumed = await ran(["partial", "meetings", "sync", "--json"])
+  expect(resumed.code, resumed.err).toBe(0)
+  expect(JSON.parse(resumed.out).item).not.toHaveProperty("stopped")
+  const asked = new URL(fetch.mock.calls[0]?.[0] as string)
+  expect(asked.searchParams.get("dateFrom")).toBe(new Date(record(52).date - 3 * 3_600_000).toISOString())
+  const listed = JSON.parse((await ran(["partial", "meetings", "list", "--json"])).out).items
+  expect(listed).toHaveLength(3)
+})
+
+it("--lookback-days widens the three-hour overlap instead of adding to it", async () => {
+  process.env.BEELINE_TOKEN = "test-token"
+  const fetch = beeline(() => Response.json([]))
+  const since = "2026-10-10T00:00:00.000Z"
+  expect((await ran(["lookback", "meetings", "sync", "--since-time", since, "--lookback-days", "1"])).code).toBe(0)
+  const asked = new URL(fetch.mock.calls[0]?.[0] as string)
+  expect(asked.searchParams.get("dateFrom")).toBe(new Date(Date.parse(since) - 86_400_000).toISOString())
+})
+
+it("--rescan reads the last 30 days and the overlap again, whatever the cursor says", async () => {
+  process.env.BEELINE_TOKEN = "test-token"
+  vi.useFakeTimers({ toFake: ["Date"] })
+  const now = Date.UTC(2026, 10, 1)
+  vi.setSystemTime(now)
+  const fetch = beeline(() => Response.json([]))
+  expect((await ran(["rescan", "meetings", "sync"])).code).toBe(0)
+  expect((await ran(["rescan", "meetings", "sync", "--rescan"])).code).toBe(0)
+  vi.useRealTimers()
+  const asked = new URL(fetch.mock.calls[1]?.[0] as string)
+  expect(asked.searchParams.get("dateFrom")).toBe(new Date(now - 30 * 86_400_000 - 3 * 3_600_000).toISOString())
+})
+
+it("meetings export prints under the read-only lock and writes only a new file with --output", async () => {
+  process.env.BEELINE_TOKEN = "test-token"
+  beeline(() => Response.json([record(61)]))
+  expect((await ran(["export", "meetings", "sync", "--since-time", "2026-10-01T00:00:00Z"])).code).toBe(0)
+  const id = String(JSON.parse((await ran(["export", "meetings", "list", "--json"])).out).items[0].id)
+  const files = [storePath(process.env), `${storePath(process.env)}-wal`].filter((file) => existsSync(file))
+  const before = files.map((file) => [statSync(file).mtimeMs, statSync(file).size])
+
+  process.env.BEELINE_READ_ONLY = "1"
+  const printed = await ran(["export", "meetings", "export", id, "--json"])
+  const output = join(tmpdir(), "call.md")
+  const lockedWrite = await ran(["export", "meetings", "export", id, "--output", output, "--json"])
+  delete process.env.BEELINE_READ_ONLY
+  expect(printed.code, printed.err).toBe(0)
+  expect(JSON.parse(printed.out).item.content).toContain("#")
+  expect(lockedWrite.code, lockedWrite.err).toBe(0)
+  expect(files.map((file) => [statSync(file).mtimeMs, statSync(file).size])).toEqual(before)
+  expect(statSync(output).mode & 0o777).toBe(0o600)
+
+  const taken = join(tmpdir(), "taken.md")
+  writeFileSync(taken, "kept")
+  const refused = await ran(["export", "meetings", "export", id, "--output", taken, "--json"])
+  expect(JSON.parse(refused.err).error.code).toBe("validation_error")
+  expect(readFileSync(taken, "utf8")).toBe("kept")
 })

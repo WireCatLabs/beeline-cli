@@ -232,7 +232,7 @@ beeline meetings export <meeting> [options]
 |---|---|
 | `--format <format>` | export format. One of: `markdown`, `vtt`. Default: `markdown`. |
 | `--transcript-id <id>` | export a specific transcript version. |
-| `--output <file>` | write content to a file through the host's writer. |
+| `--output <file>` | write content to a new file through the host's writer. |
 | `--json` | one JSON value. |
 | `--jsonl` | one JSON object per item. |
 
@@ -267,7 +267,7 @@ beeline meetings people <query> [options]
 
 ### `beeline meetings sync`
 
-bring the stored meetings up to date from the connected account
+bring the stored meetings up to date from the connected account, oldest first; a run that stops before its deadline keeps what it saved and the next one goes on from there
 
 **Changes something on this computer only.**
 
@@ -280,7 +280,8 @@ beeline meetings sync [options]
 | `--json` | one JSON value. |
 | `--jsonl` | one JSON object per item. |
 | `--since-time <time>` | fetch meetings starting at or after this ISO 8601 date or time. |
-| `--lookback-days <days>` | revisit recent occurrences for late transcripts (0–31). Default: `0`. |
+| `--lookback-days <days>` | revisit recent occurrences for late transcripts (0–31). |
+| `--rescan` | read the last 30 days again, not only what came after the last sync. |
 
 **Returns:** meeting ingestion — meetings, participants, transcript_rows, summaries, warnings, timezone; every field: beeline commands info meetings sync
 
