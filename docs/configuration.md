@@ -14,8 +14,9 @@ beeline personal config unset limit
 ## Permissions
 
 `permissions` decides what a command may do for this profile: `allow`, `ask`, `readonly` or `deny`, per permission
-key. Over MCP there is no one to ask, so `ask` lets the command run. `BEELINE_READ_ONLY=1` refuses every write, whatever
-the permissions say.
+key. Over MCP there is no one to ask, so `ask` lets the command run. `BEELINE_READ_ONLY=1` refuses a change to the
+sign-in, the settings, the agent setup or the stored meetings, whatever the permissions say. A sync still fetches new
+calls into the store; the [README](../README.md#settings-and-permissions) lists what it refuses and lets through.
 
 ## Run records
 
