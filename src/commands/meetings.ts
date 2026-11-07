@@ -3,6 +3,7 @@ import { annotate, metaOf } from "@wirecat/cli-base/commands"
 import {
   baseContext,
   environmentOf,
+  fetchesOnly,
   hasSharedContract,
   inCommandRun,
   itemOf,
@@ -11,8 +12,12 @@ import {
   outputFor,
   overrideSharedContract,
   type RunOptions,
+  readsOverMcp,
   renderAnswer,
+  runBudgetOf,
   snakeKeys,
+  writeNewFile,
+  writesNewFileOnlyWith,
 } from "@wirecat/cli-core/cli"
 import type { MeetingSource, MeetingStore } from "@wirecat/cli-core/meetings"
 import { addMeetingCommands, type MeetingCommandDeps } from "@wirecat/cli-core/meetings/cli"
@@ -64,6 +69,11 @@ const withExample = (leaf: Command) => {
   else change(leaf)
 }
 
+const goOn = (command: string, step: string, why: string, safe: boolean) => ({
+  meta: { complete: false },
+  next: [{ kind: "command" as const, step, command, args: {}, why, safe_to_auto_execute: safe }],
+})
+
 /** cli-core's reads answer `{ items, page, limit, hasMore, meta? }` or one value; beeline prints both in its envelope. */
 const bodyOf = (command: Command, value: unknown) => {
   // cli-core 0.498 writes `meetings list` as a finished list, its `page` an object with the next step.
@@ -79,6 +89,11 @@ const bodyOf = (command: Command, value: unknown) => {
     const kept = next?.filter((one) => one.step !== "page.next") ?? []
     return { ...list, ...(kept.length > 0 ? { next: kept } : {}) }
   }
+  if (pathOf(command).join(" ") === "meetings sync" && isRecord(value) && value.stopped)
+    return itemOf(
+      snakeKeys(value),
+      goOn("meetings sync", "sync.continue", `${value.remaining} calls were not reached before the run stopped`, true),
+    )
   return itemOf(snakeKeys(value))
 }
 
@@ -103,6 +118,9 @@ export const meetingsMount = () => {
       return need().source()
     },
     inRun: inCommandRun,
+    newFileOutput: writesNewFileOnlyWith,
+    writeFile: writeNewFile,
+    budgetOf: runBudgetOf,
     write: (value) => {
       const at = action
       if (!at) throw new CliError("configuration_error", "no command is running")
@@ -126,19 +144,12 @@ export const meetingsMount = () => {
             progress: (line) => (action ? environmentOf(action).streams?.diagnostic(line) : undefined),
             write: (report, command) => {
               const resume = report.stopped
-                ? {
-                    meta: { complete: false },
-                    next: [
-                      {
-                        kind: "command" as const,
-                        step: "transcribe.continue",
-                        command: "meetings transcribe",
-                        args: {},
-                        why: `${report.remaining} calls still have no transcript`,
-                        safe_to_auto_execute: false,
-                      },
-                    ],
-                  }
+                ? goOn(
+                    "meetings transcribe",
+                    "transcribe.continue",
+                    `${report.remaining} calls still have no transcript`,
+                    false,
+                  )
                 : {}
               answers.push(() => renderAnswer(command, outputFor(command), itemOf(report, resume)))
             },
@@ -175,7 +186,9 @@ export const meetingsMount = () => {
         import("../beeline.js"),
         import("../call-source.js"),
       ])
-      const { store, accountId } = await openProfileStore(env, profile, metaOf(at).effects?.local === "read")
+      // A command whose only write is a file (`meetings export --output`) leaves the store as it was.
+      const reads = metaOf(at).effects?.local === "read" || (readsOverMcp(at) && !fetchesOnly(at))
+      const { store, accountId } = await openProfileStore(env, profile, reads)
       let closed: Promise<void> | undefined
       const close = () => (closed ??= store.close())
       // Still tracked: a command that fails never reaches postAction.

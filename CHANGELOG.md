@@ -15,6 +15,9 @@ Notable changes to `@wirecat/beeline-cli`. One section per version, newest first
 - `--help` and the agent skill say what `beeline` does.
 - `session list` lists the profiles on this computer and whether each has a Beeline token. It needs no profile and
   never shows the token. `session start` now remembers the profile, so the list finds it.
+- `meetings sync` stops itself before its time limit and keeps the calls it saved. Its answer then says
+  `meta.complete: false`, names the calls not reached in `remaining`, and its `next` step runs `meetings sync` again,
+  which goes on from the first call it did not reach. `meetings sync --rescan` reads the last 30 days again.
 
 ### Removed
 
@@ -29,8 +32,13 @@ Notable changes to `@wirecat/beeline-cli`. One section per version, newest first
 
 ### Fixed
 
-- When `meetings transcribe` reaches its time limit during a download, it answers with the calls it finished and how
-  many are left, instead of failing as `cancelled`.
+- When `meetings transcribe` reaches its time limit during a download or while it recognizes a call, it answers with
+  the calls it finished and how many are left, instead of failing as `cancelled` or listing the call as failed. The
+  speech engine stops between two pieces of speech instead of finishing the call.
+- `meetings export` without `--output` is a read: it runs under `BEELINE_READ_ONLY` and through the MCP server's
+  read tool, and writes nothing to the store. `--output` only ever creates a new file, readable by the owner alone, and
+  refuses a file that exists. An MCP agent gets the export in the answer and cannot choose `--output`. Before,
+  `--output` failed with `configuration_error`.
 - A read such as `meetings list` writes nothing to the store once a sync has stored the profile's calls, also under
   `BEELINE_READ_ONLY`.
 - A call record that Beeline sends in another shape fails as `invalid_response`, naming the fields and the record's

@@ -63,9 +63,10 @@ export const callSource = (api: BeelineApi): MeetingSource => {
   return {
     provider: PROVIDER_NAME,
     name: "Beeline Cloud PBX",
+    overlapMs: OVERLAP_MS,
     meetings: async (since) => {
       const meetings = new Map<string, SourceMeeting>()
-      for await (const record of api.allRecords({ from: new Date(Date.parse(since) - OVERLAP_MS) })) {
+      for await (const record of api.allRecords({ from: new Date(since) })) {
         seen.set(record.id, record)
         meetings.set(record.id, meetingOf(record))
       }

@@ -63,7 +63,6 @@ export const UNTESTED: { command: string; option?: string; reason: string }[] = 
   { command: "meetings people", option: "--max-read-bytes", reason: SHARED_MEETINGS },
   { command: "meetings people", option: "--cursor", reason: SHARED_MEETINGS },
   { command: "meetings sync", option: "--jsonl", reason: SHARED_MEETINGS },
-  { command: "meetings sync", option: "--lookback-days", reason: SHARED_MEETINGS },
   { command: "meetings import", reason: SHARED_MEETINGS },
   { command: "meetings import", option: "--json", reason: SHARED_MEETINGS },
   { command: "meetings import", option: "--jsonl", reason: SHARED_MEETINGS },
