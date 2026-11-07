@@ -1,0 +1,14 @@
+{
+  "paths": [
+    "contracts/help.snap",
+    "contracts/mcp-tools.json",
+    "contracts/plan.json",
+    "README.md",
+    "docs/index.md",
+    "docs/usage.md",
+    "docs/security.md",
+    "docs/troubleshooting.md",
+    "skills/beeline-cli/SKILL.md"
+  ],
+  "canaries": ["test-token-7f3a"]
+}

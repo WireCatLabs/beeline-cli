@@ -1,0 +1,74 @@
+#!/usr/bin/env bash
+# Runs this checkout's build of `beeline` against the owner's live Beeline account, read-only: it lists call records
+# and writes nothing to Beeline. The token is BEELINE_TOKEN when it is set, else the keyring entry `session start`
+# keeps (service beeline-cli, account token:<profile>); it reaches beeline only as BEELINE_TOKEN and is never printed.
+# Config, state and the store are a throwaway folder: a branch build must not migrate the owner's real store.
+# Only when every step passed does it record the check in docs/dev/live-checks.txt, which bin/release checks.
+#
+#   pnpm build
+#   bin/beeline-live <profile>
+set -euo pipefail
+
+[ $# -eq 1 ] || { echo "usage: bin/beeline-live <profile>" >&2; exit 2; }
+profile=$1
+root=$(CDPATH='' cd -- "$(dirname -- "$0")/.." && pwd)
+[ -f "$root/dist/bin/beeline.js" ] || { echo "no build in $root — run pnpm build first" >&2; exit 1; }
+
+if [ -z "${BEELINE_TOKEN:-}" ]; then
+  BEELINE_TOKEN=$(secret-tool lookup service beeline-cli username "token:$profile" 2>/dev/null) || true
+fi
+[ -n "$BEELINE_TOKEN" ] || {
+  echo "no token for profile $profile in the keyring; a token kept in a file is not read here: export BEELINE_TOKEN" >&2
+  exit 1
+}
+export BEELINE_TOKEN
+
+sandbox=$(mktemp -d)
+trap 'rm -rf "$sandbox"' EXIT
+beeline() {
+  HOME="$sandbox" XDG_CONFIG_HOME="$sandbox/config" XDG_DATA_HOME="$sandbox/data" XDG_STATE_HOME="$sandbox/state" \
+    XDG_CACHE_HOME="$sandbox/cache" MESSAGING_STORE="$sandbox/wirecat.db" DBUS_SESSION_BUS_ADDRESS=disabled: \
+    BEELINE_NO_UPDATE_CHECK=1 node "$root/dist/bin/beeline.js" "$profile" "$@"
+}
+# Prints counts and field names only: call records and their warnings carry phone numbers and names.
+count() {
+  node -e '
+    let s = ""
+    process.stdin.on("data", (d) => (s += d)).on("end", () => {
+      const a = JSON.parse(s)
+      if (a.item) {
+        const { meetings, participants, warnings = [] } = a.item
+        console.log(`${meetings} meeting(s), ${participants} participant(s), ${warnings.length} warning(s)`)
+        return
+      }
+      const items = a.items ?? []
+      console.log(`${items.length} item(s); fields: ${Object.keys(items[0] ?? {}).join(", ") || "none"}`)
+    })'
+}
+failed=0
+step() {
+  printf '\n== beeline %s %s\n' "$profile" "$*"
+  if ! beeline "$@"; then
+    echo "!! failed: $*"
+    failed=1
+  fi
+}
+
+counted() {
+  printf '\n== beeline %s %s\n' "$profile" "$*"
+  if ! beeline "$@" --json | count; then
+    echo "!! failed: $*"
+    failed=1
+  fi
+}
+
+step session status --check
+since=$(node -p 'new Date(Date.now() - 3 * 864e5).toISOString().slice(0, 10) + "T00:00:00Z"')
+counted meetings sync --since-time "$since"
+counted meetings list --limit 3
+
+if [ "$failed" -ne 0 ]; then
+  echo "a step failed — nothing recorded" >&2
+  exit 1
+fi
+cd "$root" && pnpm exec cli-dev live record --script bin/beeline-live

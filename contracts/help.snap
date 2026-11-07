@@ -1,0 +1,27 @@
+beeline — Beeline Cloud PBX calls in a local store: transcribe them on this computer, then read and
+search offline.
+
+Usage: beeline <profile> <command> [options]
+Account commands start with your profile, a name you choose; none is ever assumed.
+
+What you can do:
+  meetings sync                       copy the recorded calls since the last sync
+  meetings transcribe                 turn new calls into manager and client dialogues, locally
+  meetings list "duration_ms>=60000"  the calls of a minute or more, newest first
+  meetings transcript <meeting>       one call as a dialogue
+  mcp serve                           the calls for an agent, within the profile's permissions
+
+Works with:
+  tg                                  Telegram in the same local store: search, review and tasks offline
+  max                                 MAX in the same local store: search, review and tasks offline
+  wa                                  WhatsApp in the same local store: search, review and tasks offline
+  zm                                  Zoom meetings: transcripts and summaries, searchable with your other WireCat data
+  drive                               Google Drive and Docs as local text, searchable with your other WireCat data
+  gcal                                Google Calendar events, searchable with your other WireCat data
+  memo context <person>               one person across messengers, mail, notes and meetings
+  mail                                IMAP mail in the same local store: search your mailbox offline, next to your other WireCat data
+
+Start here:   beeline work session start  (any profile name works)
+Next:         beeline commands            every command, by section
+              beeline help options        output, offline, timeouts, dry run
+For agents:   beeline skill show          rules and the discovery loop
