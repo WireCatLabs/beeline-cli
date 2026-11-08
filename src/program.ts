@@ -1,5 +1,4 @@
 import { join } from "node:path"
-import type { KeyringStore } from "@wirecat/cli-base"
 import { resolvePaths } from "@wirecat/cli-base"
 import {
   appDoctorCommand,
@@ -7,9 +6,9 @@ import {
   commandsCommand,
   configCommand,
   createProgram as createSharedProgram,
-  environmentOf,
   type FirstScreen,
   outputFor,
+  ProfileTokenStore,
   type ProgramDefinition,
   type ProgramOptions,
   type RunOptions,
@@ -25,7 +24,6 @@ import { modelsCommand } from "./commands/models.js"
 import { sessionCommand } from "./commands/session.js"
 import { configuration } from "./config.js"
 import { IDENTITY, PACKAGE, SKILL } from "./identity.js"
-import { tokens } from "./token.js"
 
 const update = appUpdate({
   packageName: PACKAGE,
@@ -39,10 +37,8 @@ const update = appUpdate({
   offVariables: [`${IDENTITY.envPrefix}_NO_UPDATE_CHECK`],
 })
 
-const mcpCommand = () => {
-  // cli-core asks `signedIn` with no keyring; the run's own one, a test's `memoryKeyring()`, is taken here.
-  let keyring: KeyringStore | undefined
-  const mcp = appMcpCommand(IDENTITY, configuration, {
+const mcpCommand = () =>
+  appMcpCommand(IDENTITY, configuration, {
     name: "Beeline Cloud PBX",
     untrusted: [
       "call comments",
@@ -52,19 +48,9 @@ const mcpCommand = () => {
     ],
     permissionExample: "meetings.sync=deny",
     skill: SKILL,
-    signedIn: (profile, env) => {
-      try {
-        return tokens(env, keyring).read(profile) !== undefined
-      } catch {
-        // A keyring that cannot be read fails the server's tools as well.
-        return false
-      }
-    },
+    signedIn: (profile, env, keyring) =>
+      new ProfileTokenStore({ app: IDENTITY, env, ...(keyring ? { keyring } : {}) }).signedIn(profile),
   })
-  return mcp.hook("preAction", (_mcp, action) => {
-    keyring = environmentOf(action).keyring
-  })
-}
 
 const FIRST_SCREEN: FirstScreen = {
   pitch: "Beeline Cloud PBX calls in a local store: transcribe them on this computer, then read and search offline.",

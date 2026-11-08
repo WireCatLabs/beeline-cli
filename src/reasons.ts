@@ -6,7 +6,6 @@ const CORE = new Set(CORE_REASONS.map((one) => one.reason))
 
 /** beeline's own reasons; the shared ones, `offline.refused` among them, are cli-core's and cli-base's. */
 const OWN: [reason: string, code: string, message: string][] = [
-  ["profile.not-signed-in", "authentication_error", "this profile has no Beeline API token; sign in first"],
   ["token.refused", "authentication_error", "Beeline refused the API token"],
   ["recording.empty", "provider_error", "Beeline sent an empty recording"],
   ["recording.too-large", "validation_error", "the recording is larger than 256 MB"],
