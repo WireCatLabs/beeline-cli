@@ -1,4 +1,4 @@
-import { existsSync, readFileSync, statSync, writeFileSync } from "node:fs"
+import { existsSync, mkdtempSync, readFileSync, statSync, writeFileSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { Readable } from "node:stream"
@@ -227,6 +227,25 @@ it("a first read of a profile that never synced answers an empty list", async ()
   const listed = await ran(["fresh", "meetings", "list", "--json"])
   expect(listed.code, listed.err).toBe(0)
   expect(JSON.parse(listed.out).items).toEqual([])
+})
+
+it("under the read-only lock a read on a new machine answers empty and creates no store; a sync still writes", async () => {
+  const store = join(mkdtempSync(join(tmpdir(), "new-machine-")), "wirecat.db")
+  vi.stubEnv("MESSAGING_STORE", store)
+  vi.stubEnv("BEELINE_READ_ONLY", "1")
+  vi.stubEnv("BEELINE_TOKEN", "test-token")
+  try {
+    const listed = await ran(["fresh", "meetings", "list", "--json"])
+    expect(listed.code, listed.err).toBe(0)
+    expect(JSON.parse(listed.out).items).toEqual([])
+    expect(existsSync(store)).toBe(false)
+
+    beeline(() => Response.json([record(81)]))
+    expect((await ran(["fresh", "meetings", "sync", "--since-time", "2026-10-01T00:00:00Z"])).code).toBe(0)
+    expect(JSON.parse((await ran(["fresh", "meetings", "list", "--json"])).out).items).toHaveLength(1)
+  } finally {
+    vi.unstubAllEnvs()
+  }
 })
 
 it("a sync stopped by its budget keeps what it saved, says how to go on, and the next one picks up the rest", async () => {

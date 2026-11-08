@@ -72,6 +72,8 @@ Notable changes to `@wirecat/beeline-cli`. One section per version, newest first
   command's run and counts each request to Beeline.
 - The documents say what `beeline` does: it reads call records and recordings from Beeline Cloud PBX and transcribes
   them on this computer. They said it connected to nothing.
+- Under `BEELINE_READ_ONLY`, a first read on a new machine answers empty and creates no `wirecat.db`. It used to fall
+  back to opening the store for writing. A sync under the lock still writes what it fetches.
 
 ### Security
 
