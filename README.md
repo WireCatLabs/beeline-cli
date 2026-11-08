@@ -135,10 +135,10 @@ beeline work meetings sync --dry-run                       # what it would do an
 
 `BEELINE_READ_ONLY=1` refuses every command that changes your sign-in, your settings, the agent setup or the stored
 meetings: `session start` and `end`, `config set`, `unset`, `migrate` and `repair`, `skill install`, `mcp add` and
-`revoke`, `meetings import` and `repair`, and `upgrade`. It lets through what only adds: `meetings sync` and
-`meetings transcribe` still fetch new calls into the store, `models download` fetches a model,
-`meetings export --output` writes a new file, and `mcp server start` and `stop` run. A `--dry-run` always runs, as it
-changes nothing.
+`revoke`, `meetings import` and `repair`, and `upgrade`. It lets through what only adds: `meetings sync` still
+fetches new calls into the store, `meetings transcribe` adds transcripts (with `--replace`, the old one stays in the
+transcript's history), `models download` fetches a model, `meetings export --output` writes a new file, and
+`mcp serve`, `mcp server start` and `stop` run. A `--dry-run` always runs, as it changes nothing.
 
 More: [settings](docs/configuration.md).
 
