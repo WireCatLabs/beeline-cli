@@ -1,12 +1,19 @@
 import { CliError } from "@wirecat/cli-base"
 import { annotate } from "@wirecat/cli-base/commands"
 import { defineQuery, fieldsHelp, parseLucene, validateQuery } from "@wirecat/cli-base/query"
-import { answerEntity, type BaseEnvironment, baseContext, environmentOf, FETCH } from "@wirecat/cli-core/cli"
+import {
+  answerEntity,
+  type BaseEnvironment,
+  baseContext,
+  environmentOf,
+  FETCH,
+  refuseOffline,
+} from "@wirecat/cli-core/cli"
 import { MEETING_QUERY, type MeetingStore, type MeetingTranscriptReceiptStore } from "@wirecat/cli-core/meetings"
 import { queryWordsAfterOptions } from "@wirecat/cli-core/meetings/cli"
 import { Command } from "commander"
 import * as v from "valibot"
-import { type BeelineApi, refuseOffline } from "../beeline.js"
+import type { BeelineApi } from "../beeline.js"
 import { configuration } from "../config.js"
 import { IDENTITY } from "../identity.js"
 import type { TranscribeReport } from "../transcribe-calls.js"
@@ -96,7 +103,7 @@ export const transcribeCommand = (deps: TranscribeDeps): Command => {
   return command.action(async function (this: Command, words: string[], opts: Record<string, unknown>) {
     const { replace, maxMeetings: limit, model } = opts as { replace?: boolean; maxMeetings: number; model: string }
     const context = baseContext(this, configuration.resolveSettings)
-    refuseOffline(context.settings.offline)
+    refuseOffline(this, "Beeline")
     const query = callQuery(words.join(" ").trim() || DEFAULT_QUERY)
     const env = deps.env()
     const speech: Speech = environmentOf<SpeechEnvironment>(this).speech ?? (await import("@wirecat/cli-core/speech"))

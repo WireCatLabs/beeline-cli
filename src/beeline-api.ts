@@ -71,12 +71,6 @@ export interface RecordsQuery {
   userId?: string
 }
 
-/** `--offline` promises no connection; every command that reaches Beeline checks it before it reads the token. */
-export const refuseOffline = (offline: boolean | undefined) => {
-  if (offline)
-    throw new CliError("permission_error", "this needs Beeline; leave out --offline", { reason: "offline.refused" })
-}
-
 /**
  * Read-only on purpose: the API also deletes recordings (`DELETE v2/records/{id}`), and nothing here may call it.
  * The token lives only in the request header; no URL, error or message carries it (WC-SECR-7).

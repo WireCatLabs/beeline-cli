@@ -33,6 +33,8 @@ Notable changes to `@wirecat/beeline-cli`. One section per version, newest first
 
 ### Fixed
 
+- `meetings sync --offline` is refused before the command starts, with the same `permission_error` and reason
+  `offline.refused` as the other commands that need Beeline. From `@wirecat/cli-core` 0.607.0.
 - A damaged store file fails as `configuration_error` (`store.damaged`) instead of a crash reported as a bug. After
   such a failure, every command that writes to the store refuses until `doctor --deep` passes; reads still work.
 - When `meetings transcribe` reaches its time limit during a download or while it recognizes a call, it answers with

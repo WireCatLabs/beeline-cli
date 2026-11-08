@@ -16,6 +16,7 @@ import {
   profilesHere,
   REMOTE_READ,
   refuseCommandName,
+  refuseOffline,
   refuseUnderReadOnly,
   rememberAccount,
   renderAnswer,
@@ -23,14 +24,14 @@ import {
   secretInputOf,
 } from "@wirecat/cli-core/cli"
 import { Command } from "commander"
-import { beelineFor, refuseOffline } from "../beeline.js"
+import { beelineFor } from "../beeline.js"
 import { configuration } from "../config.js"
 import { IDENTITY } from "../identity.js"
 import { TOKEN_VARIABLE, tokens } from "../token.js"
 
 const contextOf = (command: Command) => {
   const { settings, env, keyring, run } = baseContext(command, configuration.resolveSettings)
-  return { profile: settings.profile, env, offline: settings.offline, tokens: tokens(env, keyring), run }
+  return { profile: settings.profile, env, tokens: tokens(env, keyring), run }
 }
 
 const answer = (command: Command, item: unknown) => renderAnswer(command, outputFor(command), itemOf(item))
@@ -60,9 +61,9 @@ const startCommand = () =>
       const storage = args.credentialStorage
       if (storage !== "keyring" && storage !== "file")
         throw new CliError("validation_error", "--credential-storage takes keyring or file")
-      const { profile, env, offline, tokens, run } = contextOf(this)
+      const { profile, env, tokens, run } = contextOf(this)
       refuseCommandName(profile, commandWords(rootOf(this)), IDENTITY.command)
-      refuseOffline(offline)
+      refuseOffline(this, "Beeline")
       const token = (await readSecret("Beeline API token: ", secretInputOf(this))).trim()
       if (!token) throw new CliError("validation_error", "no token was given")
       await run(() => beelineFor(this, token).records())
@@ -83,8 +84,8 @@ const statusCommand = () =>
     )
     .option("--check", "ask Beeline to prove the token still works")
     .action(async function (this: Command, args: { check?: boolean }) {
-      const { profile, offline, tokens, run } = contextOf(this)
-      if (args.check) refuseOffline(offline)
+      const { profile, tokens, run } = contextOf(this)
+      if (args.check) refuseOffline(this, "Beeline")
       const stored = tokens.read(profile)
       const status = {
         profile,
