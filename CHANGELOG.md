@@ -18,6 +18,7 @@ Notable changes to `@wirecat/beeline-cli`. One section per version, newest first
 - `meetings sync` stops itself before its time limit and keeps the calls it saved. Its answer then says
   `meta.complete: false`, names the calls not reached in `remaining`, and its `next` step runs `meetings sync` again,
   which goes on from the first call it did not reach. `meetings sync --rescan` reads the last 30 days again.
+- `models download --json` writes the download's byte progress to stderr, one JSON line at most twice a second.
 
 ### Removed
 
@@ -32,6 +33,8 @@ Notable changes to `@wirecat/beeline-cli`. One section per version, newest first
 
 ### Fixed
 
+- A damaged store file fails as `configuration_error` (`store.damaged`) instead of a crash reported as a bug. After
+  such a failure, every command that writes to the store refuses until `doctor --deep` passes; reads still work.
 - When `meetings transcribe` reaches its time limit during a download or while it recognizes a call, it answers with
   the calls it finished and how many are left, instead of failing as `cancelled` or listing the call as failed. The
   speech engine stops between two pieces of speech instead of finishing the call.
