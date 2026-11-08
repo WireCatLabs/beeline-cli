@@ -59,9 +59,9 @@ Notable changes to `@wirecat/beeline-cli`. One section per version, newest first
   download is tried again.
 - `session start` refuses a profile named after a command, such as `BEELINE_PROFILE=meetings`, before it asks for the
   token.
-- An error keeps beeline's own reason for a script to branch on: `profile.not-signed-in`, `token.refused`,
-  `recording.empty`, `recording.too-large`, `recording.not-stereo` and `model.not-downloaded`. They arrived as the
-  generic `auth.failed` or `config.invalid`. A missing speech model is now `not_found`, not `configuration_error`.
+- An error keeps its own reason for a script to branch on: `session.missing` for a profile with no token, the same in
+  every WireCat tool with an API token, and beeline's `token.refused`, `recording.empty`, `recording.too-large`,
+  `recording.not-stereo` and `model.not-downloaded`. They arrived as the generic `auth.failed` or `config.invalid`. A missing speech model is now `not_found`, not `configuration_error`.
   Beeline's own error code is in `provider_error` and in the message, no longer in the reason.
 - A `deny` in a profile's permissions stops the command: `meetings.sync: deny` no longer lets `meetings sync` call
   Beeline. Over MCP, a denied command is listed as unavailable and refused.

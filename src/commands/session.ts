@@ -1,4 +1,4 @@
-import { CliError } from "@wirecat/cli-base"
+import { CliError, type KeyringStore } from "@wirecat/cli-base"
 import { annotate } from "@wirecat/cli-base/commands"
 import { readSecret } from "@wirecat/cli-core"
 import {
@@ -12,6 +12,7 @@ import {
   listOf,
   logsInOrOut,
   outputFor,
+  ProfileTokenStore,
   profileFree,
   profilesHere,
   REMOTE_READ,
@@ -27,12 +28,14 @@ import { Command } from "commander"
 import { beelineFor } from "../beeline.js"
 import { configuration } from "../config.js"
 import { IDENTITY } from "../identity.js"
-import { TOKEN_VARIABLE, tokens } from "../token.js"
 
 const contextOf = (command: Command) => {
   const { settings, env, keyring, run } = baseContext(command, configuration.resolveSettings)
-  return { profile: settings.profile, env, tokens: tokens(env, keyring), run }
+  return { profile: settings.profile, env, tokens: tokenStore(env, keyring), run }
 }
+
+const tokenStore = (env: NodeJS.ProcessEnv, keyring: KeyringStore | undefined) =>
+  new ProfileTokenStore({ app: IDENTITY, env, ...(keyring ? { keyring } : {}) })
 
 const answer = (command: Command, item: unknown) => renderAnswer(command, outputFor(command), itemOf(item))
 
@@ -80,7 +83,7 @@ const statusCommand = () =>
   })
     .summary("show where this profile's token comes from; never the token")
     .description(
-      `show where this profile's token comes from: ${TOKEN_VARIABLE}, the keyring or a file; never the token`,
+      `show where this profile's token comes from: ${IDENTITY.envPrefix}_TOKEN, the keyring or a file; never the token`,
     )
     .option("--check", "ask Beeline to prove the token still works")
     .action(async function (this: Command, args: { check?: boolean }) {
@@ -127,7 +130,7 @@ const listCommand = () =>
       const env = environment.env ?? process.env
       // biome-ignore lint/plugin/no-own-settings: baseContext needs a profile, and this local read names none
       const { configuredProfiles } = configuration.resolveSettings({}, { env, needsProfile: false })
-      const store = tokens(env, environment.keyring)
+      const store = tokenStore(env, environment.keyring)
       const items = profilesHere(IDENTITY, configuredProfiles, env).map((profile) => {
         try {
           const stored = store.read(profile)

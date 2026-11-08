@@ -11,6 +11,7 @@ import {
   NO_EFFECTS,
   outputFor,
   overrideSharedContract,
+  ProfileTokenStore,
   type RunOptions,
   readsOverMcp,
   refuseOffline,
@@ -181,9 +182,8 @@ export const meetingsMount = () => {
       const run = environmentOf(at)
       const { settings, env, keyring } = baseContext(at, configuration.resolveSettings)
       const { profile } = settings
-      const [{ openProfileStore }, { tokens }, { beelineFor }, { callSource }] = await Promise.all([
+      const [{ openProfileStore }, { beelineFor }, { callSource }] = await Promise.all([
         import("../store.js"),
-        import("../token.js"),
         import("../beeline.js"),
         import("../call-source.js"),
       ])
@@ -199,14 +199,8 @@ export const meetingsMount = () => {
       const signedIn = () => {
         if (api) return api
         refuseOffline(at, "Beeline")
-        const token = tokens(env, keyring).read(profile)?.secret
-        if (!token)
-          throw new CliError(
-            "authentication_error",
-            `profile ${profile} has no Beeline token yet; run ${IDENTITY.command} ${profile} session start`,
-            { reason: "profile.not-signed-in" },
-          )
-        api = beelineFor(at, token)
+        const tokens = new ProfileTokenStore({ app: IDENTITY, env, ...(keyring ? { keyring } : {}) })
+        api = beelineFor(at, tokens.need(profile))
         return api
       }
       opened = {

@@ -178,11 +178,12 @@ it("stores the same call times whatever the machine's zone (WC-TIME-6)", async (
   }
 })
 
-it("keeps beeline's own reasons in the error a caller branches on", async () => {
+it("keeps the reasons a caller branches on in the error", async () => {
   const unsigned = await ran(["work", "meetings", "sync", "--json"], { keyring: memoryKeyring() })
   expect(JSON.parse(unsigned.err).error).toMatchObject({
     code: "authentication_error",
-    reason: "profile.not-signed-in",
+    reason: "session.missing",
+    message: expect.stringContaining("beeline work session start"),
   })
 
   process.env.BEELINE_TOKEN = "test-token"
