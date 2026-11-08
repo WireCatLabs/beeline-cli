@@ -4,7 +4,7 @@ import { type BaseEnvironment, environmentOf } from "@wirecat/cli-core/cli"
 import type { Command } from "commander"
 import { type BeelineApi, beelineApi } from "./beeline-api.js"
 
-export { type BeelineApi, refuseOffline } from "./beeline-api.js"
+export type { BeelineApi } from "./beeline-api.js"
 
 /** What a test hands `run()` in place of the network and real waiting. */
 export interface BeelineEnvironment extends BaseEnvironment {

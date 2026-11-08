@@ -13,6 +13,7 @@ import {
   overrideSharedContract,
   type RunOptions,
   readsOverMcp,
+  refuseOffline,
   renderAnswer,
   runBudgetOf,
   snakeKeys,
@@ -179,8 +180,8 @@ export const meetingsMount = () => {
       if (!at || !commands.has(at)) return
       const run = environmentOf(at)
       const { settings, env, keyring } = baseContext(at, configuration.resolveSettings)
-      const { profile, offline } = settings
-      const [{ openProfileStore }, { tokens }, { beelineFor, refuseOffline }, { callSource }] = await Promise.all([
+      const { profile } = settings
+      const [{ openProfileStore }, { tokens }, { beelineFor }, { callSource }] = await Promise.all([
         import("../store.js"),
         import("../token.js"),
         import("../beeline.js"),
@@ -197,7 +198,7 @@ export const meetingsMount = () => {
       let source: MeetingSource | undefined
       const signedIn = () => {
         if (api) return api
-        refuseOffline(offline)
+        refuseOffline(at, "Beeline")
         const token = tokens(env, keyring).read(profile)?.secret
         if (!token)
           throw new CliError(
