@@ -6,6 +6,9 @@
   and, with `--delete-data`, its calls in the store. The token itself stays valid in the Beeline cabinet.
 - `guide` walks through the first calls, from `session start` to a call read as a dialogue; `complete` gives shell
   completion. Both from `@wirecat/cli-core`.
+- `search meetings <words>` finds words in the transcripts and cites the call and the line, from cli-core's
+  meeting search.
+- `README.ru.md`: getting started in Russian, from installing Node.js to connecting an agent.
 - `contracts/wirecat.json` tells WireCat Desktop what `beeline` does and that it reaches only `cloudpbx.beeline.ru`.
 
 ### Changed — may break callers
@@ -19,5 +22,11 @@
 
 ### Fixed
 
+- `meetings transcript` for a call with no transcript said only "(nothing)". It now says the call has no transcript
+  yet and gives the `meetings transcribe id:<call>` to run, or says the call is shorter than five seconds; `--json`
+  answers `not_found` with reason `transcript.missing` or `transcript.too-short`. `meetings export --format vtt` says
+  the same.
+- `meetings show`, `transcript`, `summary` and `export` take the `ref` that `meetings list` prints (`meeting:1/375`)
+  as well as the plain id. Before, a ref failed with "expected a positive integer".
 - `SECURITY.md` and the README no longer say the repository is private: GitHub's private vulnerability reporting is
   open.

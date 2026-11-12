@@ -351,3 +351,23 @@ it("account remove forgets the token and keeps or deletes the profile's calls", 
   expect(keyring.get("beeline-cli", "token:work")).toBeNull()
   expect(await calls()).toBeLessThan(synced)
 })
+
+it("a call with no transcript says so and how to make one, also for a call too short to be picked", async () => {
+  process.env.BEELINE_TOKEN = "test-token"
+  beeline(() => Response.json([record(901, { duration: 10_000 }), record(902, { duration: 3_000 })]))
+  expect((await ran(["plain", "meetings", "sync", "--since-time", "2026-10-01T00:00:00Z"])).code).toBe(0)
+  const listed = JSON.parse((await ran(["plain", "meetings", "list", "--json"])).out).items as {
+    id: string
+    duration_ms: number
+  }[]
+  const long = listed.find((one) => one.duration_ms >= 5_000)?.id
+  const short = listed.find((one) => one.duration_ms < 5_000)?.id
+  const none = await ran(["plain", "meetings", "transcript", String(long), "--json"])
+  expect(JSON.parse(none.err).error).toMatchObject({ code: "not_found", reason: "transcript.missing" })
+  expect(JSON.parse(none.err).error.message).toContain(`beeline plain meetings transcribe id:${long}`)
+  expect((await ran(["plain", "meetings", "transcript", String(long)])).err).toContain("has no transcript yet")
+  const tooShort = await ran(["plain", "meetings", "transcript", String(short), "--json"])
+  expect(JSON.parse(tooShort.err).error.reason).toBe("transcript.too-short")
+  const vtt = await ran(["plain", "meetings", "export", String(long), "--format", "vtt", "--json"])
+  expect(JSON.parse(vtt.err).error.reason).toBe("transcript.missing")
+})

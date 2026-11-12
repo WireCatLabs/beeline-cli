@@ -229,6 +229,19 @@
     },
     {
       "path": [
+        "search",
+        "meetings"
+      ],
+      "summary": "find words in stored meetings, indexing new ones first",
+      "effects": {
+        "remote": "none",
+        "local": "read"
+      },
+      "permission": "search.meetings",
+      "entity": "meeting_hit"
+    },
+    {
+      "path": [
         "models",
         "list"
       ],

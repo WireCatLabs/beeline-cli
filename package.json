@@ -23,6 +23,7 @@
     "scenarios",
     "contracts/wirecat.json",
     "/README.md",
+    "/README.ru.md",
     "CHANGELOG.md",
     "LICENSE"
   ],
@@ -42,7 +43,7 @@
     "smoke:bun": "bun scripts/smoke.ts && bun scripts/smoke-bundle.ts",
     "smoke:node": "node --experimental-strip-types scripts/smoke-bundle.ts",
     "package:check": "pnpm smoke",
-    "docs:check": "cli-dev docs-check --rules scripts/docs-rules.ts --pages && node --experimental-strip-types scripts/changelog-fragments.ts --rules scripts/docs-rules.ts && pnpm docs:spell && rumdl check --config config/wirecat/rumdl.toml README.md SECURITY.md CHANGELOG.md CLAUDE.md AGENTS.md docs/*.md docs/dev/*.md && pnpm docs:lint",
+    "docs:check": "cli-dev docs-check --rules scripts/docs-rules.ts --pages && node --experimental-strip-types scripts/changelog-fragments.ts --rules scripts/docs-rules.ts && pnpm docs:spell && rumdl check --config config/wirecat/rumdl.toml README.md README.ru.md SECURITY.md CHANGELOG.md CLAUDE.md AGENTS.md docs/*.md docs/dev/*.md && pnpm docs:lint",
     "docs:lint": "markdownlint-cli2",
     "contracts:check": "cli-contract contracts/plan.json",
     "security:no-leak": "cli-testing security no-leak . contracts/no-leak.json",
@@ -55,7 +56,7 @@
     "release:check": "pnpm standards:check && pnpm lint && pnpm typecheck && pnpm test:coverage && pnpm lint:commands && pnpm audit:commands && pnpm contracts:check && pnpm test:matrix:check && pnpm docs:check && pnpm generate:check && pnpm version:check && pnpm security:no-leak && pnpm package:check",
     "prepare": "lefthook install || true",
     "prepack": "pnpm build",
-    "docs:spell": "cspell lint --config cspell.json --no-progress --no-summary README.md SECURITY.md CHANGELOG.md AGENTS.md CLAUDE.md 'docs/*.md' 'skills/**/*.md'"
+    "docs:spell": "cspell lint --config cspell.json --no-progress --no-summary README.md README.ru.md SECURITY.md CHANGELOG.md AGENTS.md CLAUDE.md 'docs/*.md' 'skills/**/*.md'"
   },
   "dependencies": {
     "@wirecat/cli-base": "0.98.0",

@@ -16,6 +16,10 @@ permissions. A gap in cli-core is fixed in cli-core.
   under them, links relative to `changes/`. Every open pull request edits the same lines under `## Unreleased` and
   conflicts at each merge. `pnpm docs:check` checks the fragments; `bin/release` collects them into the version's
   section, so a fragment with `Added` needs a minor release.
+- **`README.ru.md` is the one Russian page.** This narrows the handbook's
+  [WC-DOC-13](node_modules/@wirecat/cli-base/docs/standards/docs.md): beeline's users read Russian, so the onboarding
+  page has a Russian copy. Every other page stays English; a change to the onboarding in `README.md` changes
+  `README.ru.md` too.
 
 Add a rule here only when it holds for `beeline` alone, and link the handbook rule it narrows.
 

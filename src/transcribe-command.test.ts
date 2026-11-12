@@ -113,10 +113,8 @@ it("a later sync that lists a transcribed call again keeps its transcript", asyn
   expect((await ran(["work", "meetings", "sync", "--since-time", "2026-10-01T00:00:00Z"])).code).toBe(0)
 
   const listed = JSON.parse((await ran(["work", "meetings", "list", "--json"])).out).items as { id: string }[]
-  const transcripts = await Promise.all(
-    listed.map(async ({ id }) => JSON.parse((await ran(["work", "meetings", "transcript", id, "--json"])).out).items),
-  )
-  expect(transcripts.filter((items) => items.length > 0)).toHaveLength(2)
+  const read = await Promise.all(listed.map(({ id }) => ran(["work", "meetings", "transcript", id, "--json"])))
+  expect(read.filter((one) => one.code === 0 && JSON.parse(one.out).items.length > 0)).toHaveLength(2)
 })
 
 it("says the speech model is missing as not_found, with its own reason", async () => {
@@ -142,4 +140,31 @@ it("a deadline that stops the speech engine mid-call answers what it finished, n
   expect(answer.item).toMatchObject({ transcribed: 0, failed: [], stopped: true, remaining: 2 })
   expect(answer.meta.complete).toBe(false)
   expect(answer.next[0]).toMatchObject({ command: "meetings transcribe" })
+})
+
+it("search meetings finds a word in the transcripts and cites the call", async () => {
+  expect((await ran(["work", "meetings", "transcribe", "--json"], { speech: speech() })).code).toBe(0)
+  const found = await ran(["work", "search", "meetings", "слушаю", "--json"])
+  expect(found.code, found.err).toBe(0)
+  const hits = JSON.parse(found.out).items as { excerpt: string; ref: string }[]
+  expect(hits.length).toBeGreaterThan(0)
+  expect(hits[0]?.excerpt).toContain("Слушаю")
+  expect(JSON.parse((await ran(["work", "search", "meetings", "доставка", "--json"])).out).items).toEqual([])
+})
+
+it("every command that takes a call takes the ref meetings list prints as well as the id", async () => {
+  expect((await ran(["work", "meetings", "transcribe", "--json"], { speech: speech() })).code).toBe(0)
+  const [call] = JSON.parse((await ran(["work", "meetings", "list", "duration_ms>=5000", "--json"])).out).items as {
+    id: string
+    ref: string
+  }[]
+  expect(call?.ref).toMatch(/^meeting:\d+\/\d+$/)
+  for (const command of ["show", "transcript", "summary", "export"]) {
+    const byRef = await ran(["work", "meetings", command, String(call?.ref), "--json"])
+    const byId = await ran(["work", "meetings", command, String(call?.id), "--json"])
+    expect(byRef.code, `${command}: ${byRef.err}`).toBe(0)
+    expect(JSON.parse(byRef.out)).toEqual({ ...JSON.parse(byId.out), meta: expect.anything() })
+  }
+  const wrong = await ran(["work", "meetings", "show", "call-7", "--json"])
+  expect(JSON.parse(wrong.err).error.message).toContain("meeting:1/375")
 })

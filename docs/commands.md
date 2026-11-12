@@ -180,7 +180,7 @@ beeline meetings show <meeting> [options]
 
 | Argument | | What it is |
 |---|---|---|
-| `meeting` | required | stored meeting id. |
+| `meeting` | required | stored call id, or the ref meetings list prints (meeting:1/375). |
 
 | Option | What it does |
 |---|---|
@@ -203,7 +203,7 @@ beeline meetings transcript <meeting> [options]
 
 | Argument | | What it is |
 |---|---|---|
-| `meeting` | required | stored meeting id. |
+| `meeting` | required | stored call id, or the ref meetings list prints (meeting:1/375). |
 
 | Option | What it does |
 |---|---|
@@ -225,7 +225,7 @@ beeline meetings summary <meeting> [options]
 
 | Argument | | What it is |
 |---|---|---|
-| `meeting` | required | stored meeting id. |
+| `meeting` | required | stored call id, or the ref meetings list prints (meeting:1/375). |
 
 | Option | What it does |
 |---|---|
@@ -250,7 +250,7 @@ beeline meetings export <meeting> [options]
 
 | Argument | | What it is |
 |---|---|---|
-| `meeting` | required | stored meeting id. |
+| `meeting` | required | stored call id, or the ref meetings list prints (meeting:1/375). |
 
 | Option | What it does |
 |---|---|
@@ -402,6 +402,44 @@ beeline events list [query] [options]
 **Returns:** event — id, event_series_id, title, description, location, starts_at, ends_at, timezone, and 13 more; every field: beeline commands info events list
 
 **Example:** `beeline work events list --json`
+
+## `beeline search`
+
+search the stored resources
+
+### `beeline search meetings`
+
+find words in stored meetings, indexing new ones first
+
+```sh
+beeline search meetings <query> [options]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `query` | required | words, OR, (groups), -word, "a phrase", "a b"\~N (within N lines), exact:word, from:"Name" (who said the line); date>=30d, project:, tag:, topic: choose meetings; a word also matches its other forms and spellings speech recognition garbled. |
+
+| Option | What it does |
+|---|---|
+| `--meeting-id <id>` | only this stored meeting. |
+| `--identity-id <id>` | meetings with this participant identity; does not say who spoke a hit. |
+| `--person-id <id>` | meetings with a participant linked to this person. |
+| `--event-id <id>` | only meetings linked to this stored event. |
+| `--series-id <id>` | only meetings in this stored series. |
+| `--project <project>` | meetings confirmed in this project, by name, key or alias. |
+| `--tag <name>` | meetings with this tag, by name or alias. |
+| `--topic-name <name>` | meetings with this topic, by name or alias. |
+| `--since-time <time>` | meetings starting at or after this ISO 8601 date or time. |
+| `--until-time <time>` | meetings starting at or before this ISO 8601 date or time; a date alone covers that whole local day. |
+| `--limit <n>` | how many hits, 1 through 1000 (default 100). |
+| `--cursor <cursor>` | continue from the previous page's page.next_cursor, with the same query and filters. |
+| `--max-read-bytes <bytes>` | most stored bytes to read, 1 through 67108864 (default 4194304). |
+
+**Returns:** meeting hit — ref, meeting, scope, id, excerpt, offset_ms, language, line, and 5 more; every field: beeline commands info search meetings
+
+**Next usually:** `beeline meetings show <meeting>`, `beeline meetings transcript <meeting>`, `beeline meetings summary <meeting>`
+
+**Example:** `beeline work search meetings "доставка" --json`
 
 ## `beeline models`
 

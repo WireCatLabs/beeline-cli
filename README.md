@@ -1,7 +1,8 @@
 # beeline — Beeline Cloud PBX calls for AI agents
 
 Your company's recorded calls from Beeline Cloud PBX (Облачная АТС Билайн), transcribed on your computer, searchable
-offline, and ready for Claude Code, Codex, Gemini CLI or any agent — within limits you set.
+offline, and ready for Claude Code, Codex, Gemini CLI or any agent — within limits you set. По-русски:
+[README.ru.md](README.ru.md).
 
 `beeline` copies the list of recorded calls from Beeline into the local [WireCat](https://wirecat.dev) store, one
 meeting per call, with the manager and the client as its two people. `meetings transcribe` downloads each recording
@@ -58,6 +59,21 @@ first. A call that fails is listed and the rest go on; run it again to go on whe
 
 ```sh
 beeline work meetings transcribe --max-meetings 50
+```
+
+**Transcribe a backlog.** A run takes at most `--max-meetings` calls, so a backlog of hundreds is one run with a large
+cap, or several runs that each go on where the last stopped. On a recent laptop processor a call takes about one
+seventh of its length (1644 s of audio in 222 s, measured on 2026-11-12). There is no built-in schedule yet: run
+`meetings sync` and `meetings transcribe` from cron or a systemd timer.
+
+```sh
+beeline work meetings sync && beeline work meetings transcribe --max-meetings 500
+```
+
+**Find a word in every call.** Searches the transcripts and cites the call and the line.
+
+```sh
+beeline work search meetings "доставка"
 ```
 
 More:
