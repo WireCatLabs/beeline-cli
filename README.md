@@ -117,6 +117,7 @@ Each profile is one Beeline PBX. No command ever picks a profile for you; `beeli
 beeline work session start               # asks for the token hidden, or reads it from stdin
 beeline work session status --check      # ask Beeline whether the token still works
 beeline work session end                 # forget the token; the synced calls stay
+beeline work account remove --keep-data  # forget the profile here; --delete-data deletes its calls too
 ```
 
 The token comes from the Beeline cabinet: Услуги → Интеграция по API. `beeline` keeps it in the system keyring. Where
@@ -137,8 +138,9 @@ beeline work meetings sync --dry-run                       # what it would do an
 meetings: `session start` and `end`, `config set`, `unset`, `migrate` and `repair`, `skill install`, `mcp add` and
 `revoke`, `meetings import` and `repair`, and `upgrade`. It lets through what only adds: `meetings sync` still
 fetches new calls into the store, `meetings transcribe` adds transcripts (with `--replace`, the old one stays in the
-transcript's history), `models download` fetches a model, `meetings export --output` writes a new file, and
-`mcp serve`, `mcp server start` and `stop` run. A `--dry-run` always runs, as it changes nothing.
+transcript's history), `models download` fetches a model, `meetings export --output` writes a new file inside a
+scheduled run's work folder and nowhere else, and `mcp serve`, `mcp server start` and `stop` run. A `--dry-run`
+always runs, as it changes nothing.
 
 More: [settings](docs/configuration.md).
 

@@ -1,16 +1,23 @@
 [
   {
-    "rule": "list-without-query",
-    "target": "session list",
-    "reason": "Lists the few profiles on this computer, every one at once by design (WC-ACCT-12), as gcal-cli's session list does; a filter would let a caller narrow it to one and read that as the only profile.",
-    "owner": "@WireCatLabs",
-    "review_after": "2027-05-06"
-  },
-  {
     "rule": "wcat-bin-name",
     "target": "package.json \"bin\" beeline",
     "reason": "Keeps the short beeline command beside wcat-beeline, as gcal and mail do: the docs, the skill and the agent setups type beeline.",
     "owner": "@WireCatLabs",
     "review_after": "2027-05-06"
+  },
+  {
+    "rule": "option-role",
+    "target": "account remove --keep-data",
+    "reason": "cli-core's shared account remove declares it, the same flag every WireCat CLI takes and WireCat Desktop calls; the vocabulary has no role for it yet, and the flag is cli-core's to rename.",
+    "owner": "@WireCatLabs",
+    "review_after": "2027-05-12"
+  },
+  {
+    "rule": "option-role",
+    "target": "account remove --delete-data",
+    "reason": "cli-core's shared account remove declares it, the same flag every WireCat CLI takes and WireCat Desktop calls; the vocabulary has no role for it yet, and the flag is cli-core's to rename.",
+    "owner": "@WireCatLabs",
+    "review_after": "2027-05-12"
   }
 ]

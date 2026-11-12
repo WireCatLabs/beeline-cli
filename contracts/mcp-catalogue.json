@@ -1,6 +1,4 @@
 {
-  "commands": "read",
-  "commands info": "read",
   "session status": "read",
   "session list": "read",
   "meetings list": "read",
@@ -15,18 +13,5 @@
   "meetings transcribe": "read",
   "events list": "read",
   "models list": "read",
-  "models download": "write",
-  "doctor": "read",
-  "skill show": "read",
-  "skill install": "write",
-  "skill status": "read",
-  "upgrade": "write",
-  "config show": "read",
-  "config set": "write",
-  "config unset": "write",
-  "config migrate": "write",
-  "config repair": "write",
-  "runs list": "read",
-  "runs show": "read",
-  "runs path": "read"
+  "models download": "write"
 }

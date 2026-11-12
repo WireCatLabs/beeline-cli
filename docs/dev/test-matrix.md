@@ -7,7 +7,7 @@ ran it · ⛔ not tested offline, with the reason and where it is checked instea
 Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 [TESTING.md](TESTING.md) for how, and for the states and failures that cut across commands.
 
-**73 ✅ · 61 ⛔ · 0 ❌** — 41 commands, 93 options.
+**77 ✅ · 67 ⛔ · 0 ❌** — 46 commands, 98 options.
 
 | Command | Option | | Note |
 |---|---|---|---|
@@ -19,6 +19,10 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | `session status` | `--check` | ✅ |  |
 | `session end` |  | ✅ |  |
 | `session list` |  | ✅ |  |
+| `account remove` |  | ✅ |  |
+| `account remove` | `--keep-data` | ✅ |  |
+| `account remove` | `--delete-data` | ✅ |  |
+| `account remove` | `--dry-run` | ⛔ | cli-core's shared command or flag, tested in cli-core; beeline adds nothing to it |
 | `meetings list` |  | ✅ |  |
 | `meetings list` | `--json` | ✅ |  |
 | `meetings list` | `--jsonl` | ⛔ | cli-core's shared meetings command, tested in cli-core's src/meetings/cli; beeline supplies only the store and the call source (src/calls.test.ts) |
@@ -73,11 +77,16 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | `models download` | `--accept-terms` | ⛔ | cli-core's shared model catalogue downloads hundreds of MB from the model's pinned address; cli-core tests it |
 | `doctor` |  | ✅ |  |
 | `doctor` | `--online` | ⛔ | cli-core's shared command or flag, tested in cli-core; beeline adds nothing to it |
+| `doctor reports show` |  | ⛔ | cli-core's shared command or flag, tested in cli-core; beeline adds nothing to it |
+| `doctor reports create` |  | ⛔ | cli-core's shared command or flag, tested in cli-core; beeline adds nothing to it |
+| `doctor reports create` | `--run` | ⛔ | cli-core's shared command or flag, tested in cli-core; beeline adds nothing to it |
+| `doctor reports create` | `--output` | ⛔ | cli-core's shared command or flag, tested in cli-core; beeline adds nothing to it |
 | `skill show` |  | ✅ |  |
 | `skill show` | `--for` | ✅ |  |
 | `skill install` |  | ✅ |  |
 | `skill install` | `--for` | ✅ |  |
 | `skill status` |  | ✅ |  |
+| `guide` |  | ✅ |  |
 | `mcp serve` |  | ✅ |  |
 | `mcp serve` | `--permission` | ⛔ | cli-core's appMcpCommand, tested in cli-core; beeline supplies only the instructions and signedIn (src/mcp.test.ts) |
 | `mcp serve` | `--profiles` | ⛔ | cli-core's appMcpCommand, tested in cli-core; beeline supplies only the instructions and signedIn (src/mcp.test.ts) |
@@ -124,6 +133,7 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | `runs show` |  | ✅ |  |
 | `runs show` | `--problems` | ✅ |  |
 | `runs path` |  | ✅ |  |
+| `complete` |  | ⛔ | cli-core's shared command or flag, tested in cli-core; beeline adds nothing to it |
 | `help` |  | ✅ |  |
 | *global* | `--version` | ⛔ | Commander answers before any command runs, so the trace never sees it; `pnpm version:check` checks it |
 | *global* | `--verbose` | ✅ |  |

@@ -293,7 +293,7 @@ it("--rescan reads the last 30 days and the overlap again, whatever the cursor s
   expect(asked.searchParams.get("dateFrom")).toBe(new Date(now - 30 * 86_400_000 - 3 * 3_600_000).toISOString())
 })
 
-it("meetings export prints under the read-only lock and writes only a new file with --output", async () => {
+it("meetings export prints under the read-only lock and writes a file only in the run work folder", async () => {
   process.env.BEELINE_TOKEN = "test-token"
   beeline(() => Response.json([record(61)]))
   expect((await ran(["export", "meetings", "sync", "--since-time", "2026-10-01T00:00:00Z"])).code).toBe(0)
@@ -301,13 +301,18 @@ it("meetings export prints under the read-only lock and writes only a new file w
   const files = [storePath(process.env), `${storePath(process.env)}-wal`].filter((file) => existsSync(file))
   const before = files.map((file) => [statSync(file).mtimeMs, statSync(file).size])
 
+  const work = mkdtempSync(join(tmpdir(), "beeline-work-"))
   process.env.BEELINE_READ_ONLY = "1"
+  process.env.BEELINE_WORK_FOLDER = work
   const printed = await ran(["export", "meetings", "export", id, "--json"])
-  const output = join(tmpdir(), "call.md")
+  const outside = await ran(["export", "meetings", "export", id, "--output", join(tmpdir(), "outside.md"), "--json"])
+  const output = join(work, "call.md")
   const lockedWrite = await ran(["export", "meetings", "export", id, "--output", output, "--json"])
   delete process.env.BEELINE_READ_ONLY
+  delete process.env.BEELINE_WORK_FOLDER
   expect(printed.code, printed.err).toBe(0)
   expect(JSON.parse(printed.out).item.content).toContain("#")
+  expect(JSON.parse(outside.err).error.reason).toBe("read-only.output-outside")
   expect(lockedWrite.code, lockedWrite.err).toBe(0)
   expect(files.map((file) => [statSync(file).mtimeMs, statSync(file).size])).toEqual(before)
   expect(statSync(output).mode & 0o777).toBe(0o600)
@@ -317,4 +322,26 @@ it("meetings export prints under the read-only lock and writes only a new file w
   const refused = await ran(["export", "meetings", "export", id, "--output", taken, "--json"])
   expect(JSON.parse(refused.err).error.code).toBe("validation_error")
   expect(readFileSync(taken, "utf8")).toBe("kept")
+})
+
+it("account remove forgets the token and keeps or deletes the profile's calls", async () => {
+  const keyring = memoryKeyring()
+  beeline(() => Response.json([record(61)]))
+  const signIn = () => ran(["work", "session", "start", "--json"], { keyring, stdin: Readable.from(["right\n"]) })
+  const calls = async () => JSON.parse((await ran(["work", "meetings", "list", "--json"])).out).items.length
+  expect((await signIn()).code).toBe(0)
+  expect((await ran(["work", "meetings", "sync", "--since-time", "2026-10-01T00:00:00Z"], { keyring })).code).toBe(0)
+  const synced = await calls()
+
+  const kept = await ran(["work", "account", "remove", "--keep-data", "--yes", "--json"], { keyring })
+  expect(kept.code, kept.err).toBe(0)
+  expect(JSON.parse(kept.out).item).toMatchObject({ data: "kept", revoked: null })
+  expect(keyring.get("beeline-cli", "token:work")).toBeNull()
+  expect(await calls()).toBe(synced)
+
+  expect((await signIn()).code).toBe(0)
+  const deleted = await ran(["work", "account", "remove", "--delete-data", "--yes", "--json"], { keyring })
+  expect(deleted.code, deleted.err).toBe(0)
+  expect(keyring.get("beeline-cli", "token:work")).toBeNull()
+  expect(await calls()).toBeLessThan(synced)
 })

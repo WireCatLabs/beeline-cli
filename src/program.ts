@@ -1,12 +1,15 @@
 import { join } from "node:path"
+import { fileURLToPath } from "node:url"
 import { resolvePaths } from "@wirecat/cli-base"
 import {
+  appCompleteCommand,
   appDoctorCommand,
   appMcpCommand,
   commandsCommand,
   configCommand,
   createProgram as createSharedProgram,
   type FirstScreen,
+  guideCommand,
   outputFor,
   ProfileTokenStore,
   type ProgramDefinition,
@@ -19,6 +22,7 @@ import {
 } from "@wirecat/cli-core/cli"
 import { appUpdate } from "@wirecat/cli-core/update"
 import type { Command } from "commander"
+import { accountCommand } from "./commands/account.js"
 import { meetingsMount } from "./commands/meetings.js"
 import { modelsCommand } from "./commands/models.js"
 import { sessionCommand } from "./commands/session.js"
@@ -76,10 +80,12 @@ export const definition = (): ProgramDefinition => {
     commands: () => [
       commandsCommand(IDENTITY),
       sessionCommand(),
+      accountCommand(),
       ...meetings.commands(),
       modelsCommand(),
       appDoctorCommand(IDENTITY, configuration, { packageName: PACKAGE }),
       skillCommand(IDENTITY, SKILL),
+      guideCommand(IDENTITY, { directory: fileURLToPath(new URL("../scenarios", import.meta.url)) }),
       mcpCommand(),
       upgradeCommand(IDENTITY, PACKAGE, (command) => ({
         ...outputFor(command),
@@ -89,6 +95,7 @@ export const definition = (): ProgramDefinition => {
       })),
       configCommand(IDENTITY, configuration),
       runsCommand(IDENTITY),
+      appCompleteCommand(IDENTITY, configuration),
     ],
   }
 }

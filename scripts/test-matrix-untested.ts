@@ -116,4 +116,10 @@ export const UNTESTED: { command: string; option?: string; reason: string }[] = 
   { command: "config repair", reason: SHARED_CORE },
   { command: "config repair", option: "--dry-run", reason: SHARED_CORE },
   { command: "", option: "--compact", reason: SHARED_CORE },
+  { command: "account remove", option: "--dry-run", reason: SHARED_CORE },
+  { command: "doctor reports show", reason: SHARED_CORE },
+  { command: "doctor reports create", reason: SHARED_CORE },
+  { command: "doctor reports create", option: "--run", reason: SHARED_CORE },
+  { command: "doctor reports create", option: "--output", reason: SHARED_CORE },
+  { command: "complete", reason: SHARED_CORE },
 ]

@@ -20,8 +20,10 @@ Works with:
   gcal                                Google Calendar events, searchable with your other WireCat data
   memo context <person>               one person across messengers, mail, notes and meetings
   mail                                IMAP mail in the same local store: search your mailbox offline, next to your other WireCat data
+  b24                                 Bitrix24 CRM: deals, leads and pipelines, searchable with your other WireCat data
 
 Start here:   beeline work session start  (any profile name works)
 Next:         beeline commands            every command, by section
+              beeline guide               scenarios: command sequences for common tasks
               beeline help options        output, offline, timeouts, dry run
 For agents:   beeline skill show          rules and the discovery loop
