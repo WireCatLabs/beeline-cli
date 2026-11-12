@@ -269,7 +269,7 @@
         "reports",
         "show"
       ],
-      "summary": "what a problem report holds; writes nothing",
+      "summary": "what a report holds and never holds, and where to send it; writes nothing",
       "effects": {
         "remote": "none",
         "local": "none"
@@ -281,7 +281,7 @@
         "reports",
         "create"
       ],
-      "summary": "write a problem report to a file, and say where to send it",
+      "summary": "the report file written: its path, the run it is about, and where to send it",
       "effects": {
         "remote": "none",
         "local": "write"
