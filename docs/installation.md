@@ -2,14 +2,8 @@
 
 Install `beeline` once on each computer where you or an agent use it. You need Node.js 22.16 or a later 22.x, or 24 or later; Node 23 is not supported.
 
-`beeline` is private and is not published to npm. Install it from a clone of its GitHub repository:
-
 ```sh
-git clone https://github.com/WireCatLabs/beeline-cli.git
-cd beeline-cli
-pnpm install
-pnpm build
-npm install -g .
+npm install -g @wirecat/beeline-cli
 beeline --version
 ```
 

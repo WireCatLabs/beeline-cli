@@ -22,11 +22,8 @@ Agent:  (runs beeline work meetings transcribe id:42 --json, then beeline work m
 
 ## Quick start
 
-`beeline` is private and is not on npm. Install it from a clone of this repository:
-
 ```sh
-git clone https://github.com/WireCatLabs/beeline-cli.git && cd beeline-cli
-pnpm install && pnpm build && npm install -g .
+npm install -g @wirecat/beeline-cli
 beeline skill install                    # the agent skill, for Claude Code, Codex and Gemini CLI
 beeline work session start               # paste the API token from the Beeline cabinet
 beeline work meetings sync               # copy the recorded calls into the local store
@@ -149,7 +146,6 @@ More: [settings](docs/configuration.md).
 - Only the calls Beeline recorded are listed: the PBX must have recording turned on for the manager.
 - Transcription is local only. A cloud speech service, such as OpenAI, is planned.
 - A recording over 256 MB is refused.
-- `beeline` is not on npm: install it from a clone of this repository.
 
 ## Security
 

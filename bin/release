@@ -28,10 +28,6 @@ for arg; do
 done
 
 cd "$(dirname "$0")/.."
-if [ "$(node -p 'require("./package.json").private === true')" = true ]; then
-  echo "beeline is private and is not published to npm" >&2
-  exit 1
-fi
 self=$(git hash-object bin/release)
 # The fold and land() fast-forward main, and sh reads this file as it goes: a newer bin/release would run half old,
 # half new.

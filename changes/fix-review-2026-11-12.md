@@ -1,5 +1,7 @@
 ### Added
 
+- **`beeline` is published to npm as `@wirecat/beeline-cli`.** Install it with `npm install -g @wirecat/beeline-cli`;
+  `upgrade` updates it from there. `bin/release` publishes it like every other WireCat CLI.
 - `account remove --keep-data|--delete-data` forgets a profile on this computer: its Beeline token, its config entry
   and, with `--delete-data`, its calls in the store. The token itself stays valid in the Beeline cabinet.
 - `guide` walks through the first calls, from `session start` to a call read as a dialogue; `complete` gives shell
