@@ -12,7 +12,7 @@ npm install -g @wirecat/beeline-cli
 beeline --version
 ```
 
-Check the installation, then pick a profile name for your account, such as `personal`:
+Check the installation, then pick a profile name for your account, such as `work`:
 
 ```sh
 beeline doctor

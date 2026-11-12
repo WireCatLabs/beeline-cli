@@ -11,6 +11,7 @@ import {
 } from "@wirecat/cli-core/cli"
 import { MEETING_QUERY, type MeetingStore, type MeetingTranscriptReceiptStore } from "@wirecat/cli-core/meetings"
 import { queryWordsAfterOptions } from "@wirecat/cli-core/meetings/cli"
+import type { refreshMeetingIndex } from "@wirecat/cli-core/services"
 import { Command } from "commander"
 import * as v from "valibot"
 import type { BeelineApi } from "../beeline.js"
@@ -35,7 +36,7 @@ export interface SpeechEnvironment extends BaseEnvironment {
 }
 
 export interface TranscribeDeps {
-  store: () => MeetingStore & MeetingTranscriptReceiptStore
+  store: () => MeetingStore & MeetingTranscriptReceiptStore & Parameters<typeof refreshMeetingIndex>[0]
   accountId: () => number
   api: () => BeelineApi
   env: () => NodeJS.ProcessEnv
@@ -148,6 +149,11 @@ export const transcribeCommand = (deps: TranscribeDeps): Command => {
         ),
       { unbounded: true },
     )
+    // What search meetings would do first: without it, search all and memo miss the new transcripts until then.
+    if (report.transcribed > 0) {
+      const { refreshMeetingIndex } = await import("@wirecat/cli-core/services")
+      await refreshMeetingIndex(deps.store(), deps.accountId())
+    }
     deps.write(report, this)
   })
 }

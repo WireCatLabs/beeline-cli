@@ -7,6 +7,7 @@ import type { FetchLike } from "@wirecat/cli-base/http"
 import { storePath } from "@wirecat/cli-core/store"
 import { afterEach, expect, it, vi } from "vitest"
 import { run } from "./program.js"
+import { openBeelineStore } from "./store.js"
 import { record } from "./testing/records.js"
 
 let answering: FetchLike | undefined
@@ -44,6 +45,20 @@ it("syncs Beeline's call records into the store as meetings with a manager and a
   const listed = await ran(["work", "meetings", "list", "--json"])
   expect(listed.code, listed.err).toBe(0)
   expect(JSON.parse(listed.out).items).toHaveLength(3)
+  expect(JSON.parse(listed.out).items.map((one: { title: string }) => one.title)).toContain(
+    "Входящий звонок · Test Manager ↔ +70000000000",
+  )
+  const inbound = JSON.parse((await ran(["work", "meetings", "list", "title:Входящий*", "--json"])).out).items
+  expect(inbound).toHaveLength(1)
+
+  const store = await openBeelineStore(process.env, { readOnly: true })
+  try {
+    expect(await store.accounts.storedAccount({ provider: "beeline", account: "work" })).toMatchObject({
+      scope: "work",
+    })
+  } finally {
+    await store.close()
+  }
 
   const paged = await ran(["work", "meetings", "list", "--limit", "2", "--json"])
   expect(paged.code, paged.err).toBe(0)

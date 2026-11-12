@@ -23,7 +23,7 @@ it("serves search, read and write over every command but mcp, and runs a command
 
 // Only beeline's own groups: the commands cli-core mounts are cli-core's to pin, and pinning them here turns every
 // cli-core release into an adoption change.
-const OWN_GROUPS = ["session", "meetings", "events", "models"]
+const OWN_GROUPS = ["session", "meetings", "events", "models", "search"]
 
 it("pins beeline's own commands an agent can find, and never offers a sign-in or account removal", async () => {
   const program = createProgram()

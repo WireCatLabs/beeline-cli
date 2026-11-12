@@ -4,14 +4,13 @@
   "meetings list": "read",
   "meetings show": "read",
   "meetings transcript": "read",
-  "meetings summary": "read",
   "meetings export": "read",
   "meetings people": "read",
   "meetings sync": "read",
-  "meetings import": "write",
   "meetings repair": "write",
   "meetings transcribe": "read",
   "events list": "read",
+  "search meetings": "read",
   "models list": "read",
   "models download": "write"
 }

@@ -64,7 +64,9 @@ beeline work meetings transcribe --max-meetings 50
 **Transcribe a backlog.** A run takes at most `--max-meetings` calls, so a backlog of hundreds is one run with a large
 cap, or several runs that each go on where the last stopped. On a recent laptop processor a call takes about one
 seventh of its length (1644 s of audio in 222 s, measured on 2026-11-12). There is no built-in schedule yet: run
-`meetings sync` and `meetings transcribe` from cron or a systemd timer.
+`meetings sync` and `meetings transcribe` from cron or a systemd timer. A call over 60 minutes is listed as failed
+(`recording.too-long`) and never downloaded. A call with no speech or with one mixed channel fails each time it is
+picked, as nothing remembers the failure yet; leave it out with a query, such as `NOT id:375`.
 
 ```sh
 beeline work meetings sync && beeline work meetings transcribe --max-meetings 500
@@ -97,10 +99,10 @@ beeline work mcp add claude-code --allow-writes   # or: codex
 beeline work mcp check
 ```
 
-`meetings transcribe` changes the local store, so `mcp add` stops until you pass `--allow-writes`. The profile's
-permissions decide what an agent may run. Text from a call — a transcript, a comment, a name — is marked
-`untrusted`: it is data for the agent, never instructions. `session start` and `session end` are never offered to an
-agent. With `--json`, every command prints one JSON value, and an error comes as JSON with a code to branch on.
+The server also offers commands that write, such as `models download`, `meetings repair` and `config set`, so
+`mcp add` stops until you pass `--allow-writes`. The profile's permissions decide what an agent may run. Text from a call — a transcript, a comment, a name — is marked
+`untrusted`: it is data for the agent, never instructions. `session start`, `session end` and `account remove` are never
+offered to an agent. With `--json`, every command prints one JSON value, and an error comes as JSON with a code to branch on.
 
 More: [agents](docs/usage.md#agents).
 
@@ -149,7 +151,7 @@ beeline work meetings sync --dry-run                       # what it would do an
 
 `BEELINE_READ_ONLY=1` refuses every command that changes your sign-in, your settings, the agent setup or the stored
 meetings: `session start` and `end`, `config set`, `unset`, `migrate` and `repair`, `skill install`, `mcp add` and
-`revoke`, `meetings import` and `repair`, and `upgrade`. It lets through what only adds: `meetings sync` still
+`revoke`, `meetings repair`, and `upgrade`. It lets through what only adds: `meetings sync` still
 fetches new calls into the store, `meetings transcribe` adds transcripts (with `--replace`, the old one stays in the
 transcript's history), `models download` fetches a model, `meetings export --output` writes a new file inside a
 scheduled run's work folder and nowhere else, and `mcp serve`, `mcp server start` and `stop` run. A `--dry-run`

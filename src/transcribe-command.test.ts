@@ -150,6 +150,10 @@ it("search meetings finds a word in the transcripts and cites the call", async (
   expect(hits.length).toBeGreaterThan(0)
   expect(hits[0]?.excerpt).toContain("Слушаю")
   expect(JSON.parse((await ran(["work", "search", "meetings", "доставка", "--json"])).out).items).toEqual([])
+  const side = async (query: string) =>
+    JSON.parse((await ran(["work", "search", "meetings", query, "--json"])).out).items.length
+  expect(await side("from:Клиент слушаю")).toBeGreaterThan(0)
+  expect(await side("from:Менеджер слушаю")).toBe(0)
 })
 
 it("every command that takes a call takes the ref meetings list prints as well as the id", async () => {
@@ -159,7 +163,7 @@ it("every command that takes a call takes the ref meetings list prints as well a
     ref: string
   }[]
   expect(call?.ref).toMatch(/^meeting:\d+\/\d+$/)
-  for (const command of ["show", "transcript", "summary", "export"]) {
+  for (const command of ["show", "transcript", "export"]) {
     const byRef = await ran(["work", "meetings", command, String(call?.ref), "--json"])
     const byId = await ran(["work", "meetings", command, String(call?.id), "--json"])
     expect(byRef.code, `${command}: ${byRef.err}`).toBe(0)
@@ -167,4 +171,29 @@ it("every command that takes a call takes the ref meetings list prints as well a
   }
   const wrong = await ran(["work", "meetings", "show", "call-7", "--json"])
   expect(JSON.parse(wrong.err).error.message).toContain("meeting:1/375")
+})
+
+it("indexes what it transcribed, so a search that may not write finds it", async () => {
+  expect((await ran(["work", "meetings", "transcribe", "--replace", "--json"], { speech: speech() })).code).toBe(0)
+  process.env.BEELINE_READ_ONLY = "1"
+  const found = await ran(["work", "search", "meetings", "Здравствуйте", "--json"])
+  delete process.env.BEELINE_READ_ONLY
+  expect(found.code, found.err).toBe(0)
+  expect(JSON.parse(found.out).items.length).toBeGreaterThan(0)
+})
+
+it("lists a call over an hour as failed without downloading it", async () => {
+  const downloads: string[] = []
+  const long = async (url: string | URL | Request) => {
+    if (new URL(String(url)).pathname.endsWith("/download")) downloads.push(String(url))
+    return new URL(String(url)).pathname.endsWith("/download")
+      ? new Response(new Uint8Array([7]))
+      : Response.json([record(70, { duration: 2 * 60 * 60 * 1000 })])
+  }
+  expect((await ran(["long", "meetings", "sync", "--since-time", "2026-10-01T00:00:00Z"], { fetch: long })).code).toBe(
+    0,
+  )
+  const done = await ran(["long", "meetings", "transcribe", "--json"], { speech: speech(), fetch: long })
+  expect(JSON.parse(done.out).item.failed).toEqual([expect.objectContaining({ reason: "recording.too-long" })])
+  expect(downloads).toEqual([])
 })

@@ -126,19 +126,6 @@
     {
       "path": [
         "meetings",
-        "summary"
-      ],
-      "summary": "show stored meeting summaries",
-      "effects": {
-        "remote": "none",
-        "local": "read"
-      },
-      "permission": "meetings.summary",
-      "entity": "meeting_summary"
-    },
-    {
-      "path": [
-        "meetings",
         "export"
       ],
       "summary": "export a meeting as Markdown or one transcript as WebVTT",
@@ -173,19 +160,6 @@
         "local": "write"
       },
       "permission": "meetings.sync",
-      "entity": "meeting_ingestion"
-    },
-    {
-      "path": [
-        "meetings",
-        "import"
-      ],
-      "summary": "import downloaded meeting transcripts",
-      "effects": {
-        "remote": "none",
-        "local": "write"
-      },
-      "permission": "meetings.import",
       "entity": "meeting_ingestion"
     },
     {

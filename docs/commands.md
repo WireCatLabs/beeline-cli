@@ -166,7 +166,7 @@ beeline meetings list [query] [options]
 
 **Returns:** meeting — ref, id, provider, account, title, url, started_at, ended_at, and 8 more; every field: beeline commands info meetings list
 
-**Next usually:** `beeline meetings show <meeting>`, `beeline meetings transcript <meeting>`, `beeline meetings summary <meeting>`
+**Next usually:** `beeline meetings show <meeting>`, `beeline meetings transcript <meeting>`, `beeline meetings export <meeting>`
 
 **Example:** `beeline work meetings list --limit 20 --json`
 
@@ -189,7 +189,7 @@ beeline meetings show <meeting> [options]
 
 **Returns:** meeting details — ref, id, provider, account, title, url, started_at, ended_at, and 16 more; every field: beeline commands info meetings show
 
-**Next usually:** `beeline meetings transcript <meeting>`, `beeline meetings summary <meeting>`, `beeline meetings export <meeting>`
+**Next usually:** `beeline meetings transcript <meeting>`, `beeline meetings export <meeting>`
 
 **Example:** `beeline work meetings show 1 --json`
 
@@ -214,29 +214,6 @@ beeline meetings transcript <meeting> [options]
 **Returns:** meeting transcript — ref, meeting, source, language, superseded_at, created_at, lines; every field: beeline commands info meetings transcript
 
 **Example:** `beeline work meetings transcript 1 --json`
-
-### `beeline meetings summary`
-
-show stored meeting summaries
-
-```sh
-beeline meetings summary <meeting> [options]
-```
-
-| Argument | | What it is |
-|---|---|---|
-| `meeting` | required | stored call id, or the ref meetings list prints (meeting:1/375). |
-
-| Option | What it does |
-|---|---|
-| `--json` | one JSON value. |
-| `--jsonl` | one JSON object per item. |
-
-**Returns:** meeting summary — id, meeting, source, title, overview, sections, next_steps, content, and 3 more; every field: beeline commands info meetings summary
-
-**Next usually:** `beeline meetings show <meeting>`, `beeline meetings transcript <meeting>`, `beeline meetings export <meeting>`
-
-**Example:** `beeline work meetings summary 1 --json`
 
 ### `beeline meetings export`
 
@@ -310,29 +287,6 @@ beeline meetings sync [options]
 **Returns:** meeting ingestion — meetings, participants, transcript_rows, summaries, warnings, timezone; every field: beeline commands info meetings sync
 
 **Example:** `beeline work meetings sync --since-time 2026-08-01T00:00:00Z --json`
-
-### `beeline meetings import`
-
-import downloaded meeting transcripts
-
-**Changes something on this computer only.**
-
-```sh
-beeline meetings import <folder> [options]
-```
-
-| Argument | | What it is |
-|---|---|---|
-| `folder` | required | folder of transcripts downloaded from the provider. |
-
-| Option | What it does |
-|---|---|
-| `--json` | one JSON value. |
-| `--jsonl` | one JSON object per item. |
-
-**Returns:** meeting ingestion — meetings, participants, transcript_rows, summaries, warnings, timezone; every field: beeline commands info meetings import
-
-**Example:** `beeline work meetings import ./transcripts --json`
 
 ### `beeline meetings repair`
 
@@ -437,7 +391,7 @@ beeline search meetings <query> [options]
 
 **Returns:** meeting hit — ref, meeting, scope, id, excerpt, offset_ms, language, line, and 5 more; every field: beeline commands info search meetings
 
-**Next usually:** `beeline meetings show <meeting>`, `beeline meetings transcript <meeting>`, `beeline meetings summary <meeting>`
+**Next usually:** `beeline meetings show <meeting>`, `beeline meetings transcript <meeting>`, `beeline meetings export <meeting>`
 
 **Example:** `beeline work search meetings "доставка" --json`
 

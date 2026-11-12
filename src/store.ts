@@ -70,7 +70,9 @@ const openWritable = async (env: NodeJS.ProcessEnv, profile: string) => {
   const store = await openBeelineStore(env)
   const closing = (error: unknown) => store.close().then(() => Promise.reject(error))
   const key = { provider: PROVIDER.name, account: profile }
-  return { store, accountId: await store.accounts.saveAccount(key, { name: profile }).catch(closing) }
+  // Calls are the company's: work scope, so a work search (b24's `search all`) includes them. An account already stored
+  // keeps the scope the owner gave it.
+  return { store, accountId: await store.accounts.saveAccount(key, { name: profile, scope: "work" }).catch(closing) }
 }
 
 const openEmptyStore = async (env: NodeJS.ProcessEnv, profile: string) => {

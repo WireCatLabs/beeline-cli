@@ -35,6 +35,9 @@ export interface TranscribePorts {
   recognition: Recognition
 }
 
+/** cli-core's decoder reads at most an hour of audio (`LONGEST_AUDIO_SECONDS`). */
+export const LONGEST_CALL_MS = 60 * 60 * 1000
+
 /** Calls the query names that have no transcript yet, newest first; one that fails is reported and the rest go on. */
 export const transcribeCalls = async (
   ports: TranscribePorts,
@@ -45,11 +48,19 @@ export const transcribeCalls = async (
     (a, b) => (b.startedAt ?? 0) - (a.startedAt ?? 0),
   )
   const pending = []
+  const report: TranscribeReport = { transcribed: 0, audio_seconds: 0, failed: [], remaining: 0, stopped: false }
   for (const call of calls) {
     const details = await store.meeting(call.id)
-    if (details && (options.replace || details.transcripts.length === 0)) pending.push(call)
+    if (!details || !(options.replace || details.transcripts.length === 0)) continue
+    // The decoder refuses audio over an hour, so downloading one would fail on every run.
+    if ((call.durationMs ?? 0) > LONGEST_CALL_MS)
+      report.failed.push({
+        meeting: call.id,
+        reason: "recording.too-long",
+        message: "the call is longer than 60 minutes",
+      })
+    else pending.push(call)
   }
-  const report: TranscribeReport = { transcribed: 0, audio_seconds: 0, failed: [], remaining: 0, stopped: false }
   for (const [index, call] of pending.entries()) {
     if (index >= options.limit || options.signal?.aborted) {
       report.remaining = pending.length - index

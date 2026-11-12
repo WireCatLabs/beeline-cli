@@ -13,6 +13,13 @@
 
 ### Changed — may break callers
 
+- A call's title is now its direction, manager and client's phone (`Входящий звонок · Иван Петров ↔ +7 900 …`),
+  so lists, exports and `title:` searches show who spoke. The next sync sets it on the calls already stored.
+- `meetings summary` and `meetings import` are gone: Beeline gives no summaries, and there are no transcript files to
+  import.
+- A new Beeline account is saved with the `work` scope, so a work search such as b24's `search all` includes the calls.
+- `meetings transcribe` lists a call over 60 minutes as failed (`recording.too-long`) without downloading it, and
+  brings the search index up to date after it transcribes, so `search all` and memo find new transcripts at once.
 - Under `BEELINE_READ_ONLY`, `meetings export --output` writes only inside a scheduled run's work folder
   (`BEELINE_WORK_FOLDER`) and is refused elsewhere with `read-only.output-outside`. From `@wirecat/cli-core` 0.643.0.
 
@@ -26,7 +33,9 @@
   yet and gives the `meetings transcribe id:<call>` to run, or says the call is shorter than five seconds; `--json`
   answers `not_found` with reason `transcript.missing` or `transcript.too-short`. `meetings export --format vtt` says
   the same.
-- `meetings show`, `transcript`, `summary` and `export` take the `ref` that `meetings list` prints (`meeting:1/375`)
+- `meetings show`, `transcript` and `export` take the `ref` that `meetings list` prints (`meeting:1/375`)
   as well as the plain id. Before, a ref failed with "expected a positive integer".
 - `SECURITY.md` and the README no longer say the repository is private: GitHub's private vulnerability reporting is
   open.
+- The docs and the skill name the profile `work` throughout, say which commands MCP serves without
+  `--allow-writes`, and say that a call with no speech is tried again on each run.

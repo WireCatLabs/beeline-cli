@@ -53,12 +53,10 @@ const EXAMPLES: Record<string, string> = {
   "meetings list": "--limit 20",
   "meetings show": "1",
   "meetings transcript": "1",
-  "meetings summary": "1",
   "meetings export": "1 --format markdown",
   "meetings people": '"Test Manager"',
   "meetings sync": "--since-time 2026-08-01T00:00:00Z",
   "meetings repair": "",
-  "meetings import": "./transcripts",
   "events list": "",
   "search meetings": '"доставка"',
 }
@@ -85,7 +83,8 @@ const meetingId = (text: string): number => {
   }
 }
 
-const TAKES_A_MEETING = ["meetings show", "meetings transcript", "meetings summary", "meetings export"]
+const TAKES_A_MEETING = ["meetings show", "meetings transcript", "meetings export"]
+const UNUSED = new Set(["summary", "import"])
 
 const acceptRef = (leaf: CommandType) => {
   const [argument] = leaf.registeredArguments
@@ -176,6 +175,12 @@ export const meetingsMount = () => {
     commands: (): Command[] => {
       const holder = new Command(IDENTITY.command)
       addMeetingCommands(holder, deps)
+      const meetings = holder.commands.find((group) => group.name() === "meetings")
+      if (meetings)
+        overrideSharedContract(meetings, "Beeline gives no summaries and no transcript files to import.", (group) => {
+          const mounted = group.commands as Command[]
+          for (const one of mounted.filter((leaf) => UNUSED.has(leaf.name()))) mounted.splice(mounted.indexOf(one), 1)
+        })
       addMeetingSearchCommand(holder, {
         search: async (query, request) => {
           const { searchMeetingHits } = await import("@wirecat/cli-core/services")
@@ -189,29 +194,27 @@ export const meetingsMount = () => {
           answers.push(() => renderAnswer(at, outputFor(at), body as Parameters<typeof renderAnswer>[2]))
         },
       })
-      holder.commands
-        .find((group) => group.name() === "meetings")
-        ?.addCommand(
-          transcribeCommand({
-            store: () => need().store.meetings,
-            accountId: () => need().accountId,
-            api: () => need().api(),
-            env: () => need().env,
-            signal: () => (action ? environmentOf(action).signal : undefined),
-            progress: (line) => (action ? environmentOf(action).streams?.diagnostic(line) : undefined),
-            write: (report, command) => {
-              const resume = report.stopped
-                ? goOn(
-                    "meetings transcribe",
-                    "transcribe.continue",
-                    `${report.remaining} calls still have no transcript`,
-                    false,
-                  )
-                : {}
-              answers.push(() => renderAnswer(command, outputFor(command), itemOf(report, resume)))
-            },
-          }),
-        )
+      meetings?.addCommand(
+        transcribeCommand({
+          store: () => need().store.meetings,
+          accountId: () => need().accountId,
+          api: () => need().api(),
+          env: () => need().env,
+          signal: () => (action ? environmentOf(action).signal : undefined),
+          progress: (line) => (action ? environmentOf(action).streams?.diagnostic(line) : undefined),
+          write: (report, command) => {
+            const resume = report.stopped
+              ? goOn(
+                  "meetings transcribe",
+                  "transcribe.continue",
+                  `${report.remaining} calls still have no transcript`,
+                  false,
+                )
+              : {}
+            answers.push(() => renderAnswer(command, outputFor(command), itemOf(report, resume)))
+          },
+        }),
+      )
       for (const group of holder.commands) {
         if (group.commands.length && !hasSharedContract(group)) annotate(group, { effects: NO_EFFECTS })
         for (const leaf of leaves(group)) {
