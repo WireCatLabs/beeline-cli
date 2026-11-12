@@ -7,7 +7,7 @@ ran it · ⛔ not tested offline, with the reason and where it is checked instea
 Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 [TESTING.md](TESTING.md) for how, and for the states and failures that cut across commands.
 
-**77 ✅ · 67 ⛔ · 0 ❌** — 46 commands, 98 options.
+**78 ✅ · 66 ⛔ · 0 ❌** — 46 commands, 98 options.
 
 | Command | Option | | Note |
 |---|---|---|---|
@@ -22,7 +22,7 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | `account remove` |  | ✅ |  |
 | `account remove` | `--keep-data` | ✅ |  |
 | `account remove` | `--delete-data` | ✅ |  |
-| `account remove` | `--dry-run` | ⛔ | cli-core's shared command or flag, tested in cli-core; beeline adds nothing to it |
+| `account remove` | `--dry-run` | ✅ |  |
 | `meetings list` |  | ✅ |  |
 | `meetings list` | `--json` | ✅ |  |
 | `meetings list` | `--jsonl` | ⛔ | cli-core's shared meetings command, tested in cli-core's src/meetings/cli; beeline supplies only the store and the call source (src/calls.test.ts) |

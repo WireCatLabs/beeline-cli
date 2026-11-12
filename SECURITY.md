@@ -1,8 +1,8 @@
 # Reporting a vulnerability
 
 Please report a security problem privately, never in a public issue, by email to
-[hello@wirecat.dev](mailto:hello@wirecat.dev). GitHub's private vulnerability reporting opens once this repository is
-public.
+[hello@wirecat.dev](mailto:hello@wirecat.dev) or through
+[GitHub's private vulnerability reporting](https://github.com/WireCatLabs/beeline-cli/security/advisories/new).
 
 Say what you saw, how to repeat it, and the version (`beeline --version`). Never send a token, a password, a session or
 anyone's private content.

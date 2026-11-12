@@ -333,6 +333,12 @@ it("account remove forgets the token and keeps or deletes the profile's calls", 
   expect((await ran(["work", "meetings", "sync", "--since-time", "2026-10-01T00:00:00Z"], { keyring })).code).toBe(0)
   const synced = await calls()
 
+  const dry = await ran(["work", "account", "remove", "--delete-data", "--dry-run", "--json"], { keyring })
+  expect(dry.code, dry.err).toBe(0)
+  expect(JSON.parse(dry.out).item.removed).toContainEqual({ kind: "keyring", target: "token:work" })
+  expect(keyring.get("beeline-cli", "token:work")).toBe("right")
+  expect(await calls()).toBe(synced)
+
   const kept = await ran(["work", "account", "remove", "--keep-data", "--yes", "--json"], { keyring })
   expect(kept.code, kept.err).toBe(0)
   expect(JSON.parse(kept.out).item).toMatchObject({ data: "kept", revoked: null })

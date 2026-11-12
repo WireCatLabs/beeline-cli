@@ -149,7 +149,7 @@ More: [settings](docs/configuration.md).
 - Only the calls Beeline recorded are listed: the PBX must have recording turned on for the manager.
 - Transcription is local only. A cloud speech service, such as OpenAI, is planned.
 - A recording over 256 MB is refused.
-- `beeline` is private: no npm package, and no GitHub security alerts until the repository is public.
+- `beeline` is not on npm: install it from a clone of this repository.
 
 ## Security
 

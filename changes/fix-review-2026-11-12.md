@@ -14,3 +14,8 @@
 ### Security
 
 - Every request to Beeline goes through cli-base's `hostFetch`, which reaches only `cloudpbx.beeline.ru`.
+
+### Fixed
+
+- `SECURITY.md` and the README no longer say the repository is private: GitHub's private vulnerability reporting is
+  open.
