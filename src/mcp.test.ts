@@ -1,6 +1,7 @@
 import { describeProgram } from "@wirecat/cli-base/commands"
 import { changesAuthorityAt, readsOverMcpAt } from "@wirecat/cli-core/cli"
 import { toolsFromCommands } from "@wirecat/cli-core/mcp"
+import { ownCatalogue } from "@wirecat/cli-core/testing"
 import { expect, it } from "vitest"
 import { permissions } from "./config.js"
 import { createProgram } from "./program.js"
@@ -21,25 +22,18 @@ it("serves search, read and write over every command but mcp, and runs a command
   }
 })
 
-// Only beeline's own groups: the commands cli-core mounts are cli-core's to pin, and pinning them here turns every
-// cli-core release into an adoption change.
-const OWN_GROUPS = ["session", "meetings", "events", "models", "search"]
-
 it("pins beeline's own commands an agent can find, and never offers a sign-in or account removal", async () => {
   const program = createProgram()
-  const tools = toolsFromCommands(describeProgram(program), {
+  const options = {
     includeUnavailable: true,
     exclude: [["mcp"]],
     authority: changesAuthorityAt(program),
     fetchOnly: readsOverMcpAt(program),
     permissions,
-  })
-  const catalogue = Object.fromEntries(
-    tools
-      .filter((tool) => OWN_GROUPS.includes(tool.command.split(" ")[0] ?? ""))
-      .map((tool) => [tool.command, tool.writes ? "write" : "read"]),
+  }
+  await expect(`${JSON.stringify(ownCatalogue(program, options), null, 2)}\n`).toMatchFileSnapshot(
+    "../contracts/mcp-catalogue.json",
   )
-  await expect(`${JSON.stringify(catalogue, null, 2)}\n`).toMatchFileSnapshot("../contracts/mcp-catalogue.json")
-  const offered = tools.map((tool) => tool.command)
-  for (const never of ["session start", "session end", "account remove"]) expect(offered).not.toContain(never)
+  const offered = new Map(toolsFromCommands(describeProgram(program), options).map((tool) => [tool.command, tool]))
+  for (const never of ["session start", "session end", "account remove"]) expect(offered.has(never)).toBe(false)
 })

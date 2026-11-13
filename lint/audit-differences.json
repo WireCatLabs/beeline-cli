@@ -1,0 +1,23 @@
+[
+  {
+    "group": "shared-roots",
+    "rule": "same-error-reason",
+    "target": "reason meeting-project.stale: code",
+    "reason": "cli-core 0.651.0 made a stale meeting project fingerprint conflict, not configuration_error; the published CLIs are still on 0.650.0 or older, and the entry goes once they publish on 0.651.0.",
+    "review_after": "2026-11-27"
+  },
+  {
+    "group": "shared-roots",
+    "rule": "same-entity-schema",
+    "target": "entity meeting_details",
+    "reason": "cli-core 0.650.0 names each participant's person in meetings show; the published zm is older, and the entry goes once it publishes on 0.650.0+.",
+    "review_after": "2026-11-27"
+  },
+  {
+    "group": "shared-roots",
+    "rule": "same-entity-schema",
+    "target": "entity meeting_participants",
+    "reason": "cli-core 0.650.0 names each participant's person in meetings people; the published zm is older, and the entry goes once it publishes on 0.650.0+.",
+    "review_after": "2026-11-27"
+  }
+]

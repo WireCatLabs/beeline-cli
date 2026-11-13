@@ -84,6 +84,24 @@ More:
 - Find a manager across the calls: `beeline work meetings people "Test Manager"`.
 - Search every WireCat store on this computer, chats and calls together, from any WireCat CLI with `search all`.
 
+**See the calls in Bitrix24's deals and leads.** A sync links the client of each call it saves to the Bitrix24 contact
+with the same phone number. For this, `beeline` and `b24` must use the same store on this computer (neither sets
+`MESSAGING_STORE` apart) and both accounts must be in the `work` scope; `beeline` puts its account there itself. Then
+`b24 work deals show 12 --json` and `leads show` list the newest calls of the people on the deal or lead in the field
+`meetings`, and a person's context (`contacts context` in the Telegram or MAX tool) lists theirs. A mobile number that
+only the client and one contact hold links at once. A landline, such as an office's main number, only proposes the
+link, because everyone who works there shares it.
+
+```sh
+b24 work sync                              # the contacts first
+beeline work meetings sync --rescan        # links the calls of the last 30 days
+beeline work meetings sync --since-time 2026-01-01T00:00:00Z   # and older ones
+```
+
+Calls synced by a version before this one are not linked until a sync saves them again: `--rescan` reads the last 30
+days again, `--since-time` reaches further back. The same holds for a contact added to Bitrix24 after its calls were
+synced.
+
 More: [use it](docs/usage.md).
 
 ## For AI agents

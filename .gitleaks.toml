@@ -7,6 +7,9 @@ regexTarget = "match"
 regexes = [
   # The fixtures' numbers: 7 then zeros, never a real Russian mobile number (those start 79).
   '''\+?7000000000\d''',
+  # The phone-link tests need a number cli-core reads as a mobile (9xx) and one as a Moscow landline (495), mostly zeros.
+  '''\+?7(?:900|495)000000\d''',
+  '''8 \((?:900|495)\) 000-00-0\d''',
 ]
 paths = ['''pnpm-lock\.yaml''']
 

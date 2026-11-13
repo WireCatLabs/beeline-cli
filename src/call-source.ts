@@ -1,3 +1,4 @@
+import { e164Of } from "@wirecat/cli-core"
 import type { MeetingSource, SourceMeeting, SourceParticipant } from "@wirecat/cli-core/meetings"
 import type { BeelineApi, CallRecord } from "./beeline-api.js"
 
@@ -38,6 +39,9 @@ const meetingOf = (record: CallRecord): SourceMeeting => ({
 
 const participantsOf = (record: CallRecord): SourceParticipant[] => {
   const none = { joinedAt: null, leftAt: null, durationMs: null, sessions: null, metadata: {} }
+  // Beeline gives the number as international digits without `+`. The `phone:` id must be the same E.164 number the
+  // store keeps, or cli-core only proposes the CRM contact with that number instead of linking it (NEED-2600).
+  const phone = e164Of(`+${record.phone.replace(/^\+/, "")}`, undefined) ?? null
   return [
     {
       ...none,
@@ -50,8 +54,9 @@ const participantsOf = (record: CallRecord): SourceParticipant[] => {
     },
     {
       ...none,
-      identityExternalId: `phone:${record.phone}`,
+      identityExternalId: `phone:${phone ?? record.phone}`,
       email: null,
+      phone,
       displayName: null,
       externalId: null,
       role: "client",

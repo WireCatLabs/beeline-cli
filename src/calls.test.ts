@@ -386,3 +386,58 @@ it("a call with no transcript says so and how to make one, also for a call too s
   const vtt = await ran(["plain", "meetings", "export", String(long), "--format", "vtt", "--json"])
   expect(JSON.parse(vtt.err).error.reason).toBe("transcript.missing")
 })
+
+const crmContact = async (externalId: string, name: string, phone: string) => {
+  const store = await openBeelineStore(process.env)
+  try {
+    const crm = { provider: "bitrix24", account: "work" }
+    await store.accounts.registerProvider({ name: "bitrix24", kind: "crm", aliases: [], command: "b24" })
+    await store.accounts.saveAccount(crm, { name: "work", scope: "work" })
+    await store.crm.savePeople(crm, [{ externalId, name, phone }])
+  } finally {
+    await store.close()
+  }
+}
+
+const clientOf = async (number: string) => {
+  const listed = JSON.parse((await ran(["work", "meetings", "list", "--json"])).out).items as {
+    id: number
+    title: string
+  }[]
+  const call = listed.find((one) => one.title.endsWith(number))
+  const shown = await ran(["work", "meetings", "show", String(call?.id), "--json"])
+  expect(shown.code, shown.err).toBe(0)
+  const { participants } = JSON.parse(shown.out).item.item as { participants: { role: string; person: unknown }[] }
+  return participants.find((one) => one.role === "client")
+}
+
+it("a sync links a call to the b24 contact with the same mobile number", async () => {
+  process.env.BEELINE_TOKEN = "test-token"
+  await crmContact("501", "Client Mobile", "8 (900) 000-00-01")
+  beeline(() => Response.json([record(501, { phone: "79000000001" })]))
+
+  const synced = await ran(["work", "meetings", "sync", "--since-time", "2026-10-01T00:00:00Z", "--json"])
+  expect(synced.code, synced.err).toBe(0)
+
+  expect(await clientOf("+79000000001")).toMatchObject({ person: { name: "Client Mobile" } })
+})
+
+it("a call from a landline only proposes the b24 contact with that number", async () => {
+  process.env.BEELINE_TOKEN = "test-token"
+  await crmContact("502", "Office Landline", "8 (495) 000-00-01")
+  beeline(() => Response.json([record(502, { phone: "74950000001" })]))
+
+  const synced = await ran(["work", "meetings", "sync", "--since-time", "2026-10-01T00:00:00Z", "--json"])
+  expect(synced.code, synced.err).toBe(0)
+
+  expect((await clientOf("+74950000001"))?.person).not.toMatchObject({ name: "Office Landline" })
+  const store = await openBeelineStore(process.env, { readOnly: true })
+  try {
+    const { items } = await store.people.linkProposals({ limit: 10, offset: 0 })
+    expect(items).toEqual([
+      expect.objectContaining({ identity: "bitrix24:work/contact/502", with: "beeline:phone:+74950000001" }),
+    ])
+  } finally {
+    await store.close()
+  }
+})

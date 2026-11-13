@@ -61,4 +61,13 @@ that page: `GET /records` lists at most 100 records per call, in order after the
 `run_id` and the request count (WC-LIFE-15), and `run()` bounds every command by its deadline.
 `src/calls.test.ts` checks both for `session status --check` and `meetings sync`.
 
+## A call's client and the CRM contact with its number
+
+Owner, 2026-11-13 (NEED-2600 A). The client participant carries its number as `phone`, and its identity is
+`phone:<E.164>`, both from Beeline's international digits with a `+` in front. cli-core links the callers a sync saved
+to the CRM contact that holds the same number: at once for a mobile only the two of them hold, as a proposal for a
+landline, which everyone in an office shares. It joins only when the identity is exactly `phone:<E.164>`, so the `+`
+must be there. The manager is keyed by Beeline's `abonent` and gets no phone: an extension is the company's, not a
+person's. `src/calls.test.ts` checks both cases against a Bitrix24 contact.
+
 ## Open questions for the owner

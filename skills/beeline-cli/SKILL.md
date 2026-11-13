@@ -23,6 +23,13 @@ Find your way with the tool itself, not this file:
   `from:Менеджер` narrows a search to one side. `meetings transcript <id or ref>` reads one call.
 - A call with no transcript answers `not_found` with reason `transcript.missing` and the `meetings transcribe id:<id>`
   to run.
+- A sync links each call's client to the Bitrix24 contact with the same phone. Once `b24` and `beeline` share the
+  store and the `work` scope, `b24 <profile> deals show` and `leads show` list the people's calls in `meetings`, and a
+  person's context lists theirs. A mobile shared by exactly the client and one contact links at once; a landline only
+  proposes the link for the owner to confirm.
+- Calls synced before this version, or before the contact was in Bitrix24, link only when a sync saves them again:
+  `meetings sync --rescan` (the last 30 days) or `meetings sync --since-time <date>` (older). Run
+  `b24 <profile> sync` first.
 
 ## Rules
 

@@ -49,8 +49,6 @@ beeline commands info [path]
 |---|---|---|
 | `path` | optional | one command path; without one, export schemas, error reasons and explicit overrides. |
 
-**Returns:** one command contract, or all schemas, error reasons and explicit overrides
-
 **Example:** `beeline commands info commands`
 
 ## `beeline session`
@@ -71,8 +69,6 @@ beeline session start [options]
 |---|---|
 | `--credential-storage <storage>` | where the token is kept: keyring (the default, which falls back to a private file by itself when no keyring works), or file, not recommended. Default: `keyring`. |
 
-**Returns:** sign in with the Beeline API token
-
 **Example:** `beeline work session start`
 
 ### `beeline session status`
@@ -87,8 +83,6 @@ beeline session status [options]
 |---|---|
 | `--check` | ask Beeline to prove the token still works. |
 
-**Returns:** show where this profile's token comes from; never the token
-
 **Example:** `beeline work session status`, `beeline work session status --check --json`
 
 ### `beeline session end`
@@ -101,8 +95,6 @@ forget this profile's token on this computer; synced calls stay
 beeline session end
 ```
 
-**Returns:** forget this profile's token on this computer; synced calls stay
-
 **Example:** `beeline work session end`
 
 ### `beeline session list`
@@ -112,8 +104,6 @@ list the profiles on this computer and whether each has a Beeline token; picks n
 ```sh
 beeline session list
 ```
-
-**Returns:** list the profiles here and whether each is signed in
 
 **Example:** `beeline session list`, `beeline session list --json`
 
@@ -452,8 +442,6 @@ beeline doctor [options]
 |---|---|
 | `--online` | also connect once and read the account; sends nothing. |
 
-**Returns:** the state this installation is in, without connecting unless --online
-
 **Example:** `beeline doctor`, `beeline doctor --json`
 
 ### `beeline doctor reports`
@@ -467,8 +455,6 @@ what a problem report holds; writes nothing
 ```sh
 beeline doctor reports show
 ```
-
-**Returns:** what a report holds and never holds, and where to send it; writes nothing
 
 **Example:** `beeline doctor reports show`
 
@@ -486,8 +472,6 @@ beeline doctor reports create [options]
 |---|---|
 | `--run <id>` | the run the report is about; the newest failed one if not given. |
 | `--output <file>` | where to write it; a new file in this directory if not given. |
-
-**Returns:** the report file written: its path, the run it is about, and where to send it
 
 **Example:** `beeline doctor reports create --output ./problem-report.json`
 
@@ -507,8 +491,6 @@ beeline skill show [options]
 |---|---|
 | `--for <agents>` | print the copy installed for these agents instead of this version's. One of: `claude`, `agents`. |
 
-**Returns:** print the tool's instructions for AI agents
-
 **Example:** `beeline skill show`
 
 ### `beeline skill install`
@@ -525,8 +507,6 @@ beeline skill install [options]
 |---|---|
 | `--for <agents>` | which agents to install for. One of: `claude`, `agents`, `hermes`, `all`. Default: `all`. |
 
-**Returns:** install the tool's instructions for AI agents
-
 **Example:** `beeline skill install --for agents`
 
 ### `beeline skill status`
@@ -536,8 +516,6 @@ for each place `beeline skill install` writes to, and for the copy Hermes reads:
 ```sh
 beeline skill status
 ```
-
-**Returns:** whether the installed instructions for AI agents match this version
 
 **Example:** `beeline skill status`, `beeline skill status --json`
 
@@ -552,8 +530,6 @@ beeline guide [name]
 | Argument | | What it is |
 |---|---|---|
 | `name` | optional | one scenario; without it, the list. |
-
-**Returns:** scenarios: the commands for a common task, in order, and why each
 
 **Example:** `beeline guide`, `beeline guide first-calls --json`
 
@@ -579,8 +555,6 @@ beeline mcp serve [options]
 | `--port <port>` | the local port for --http (default 8765). |
 | `--public-url <url>` | the tunnel's https address the browser apps use, e.g. https://<name>.ts.net or https://<name>.ts.net/tg. |
 
-**Returns:** serve this profile's commands to an AI agent
-
 **Example:** `beeline personal mcp serve`, `beeline mcp serve --profiles work,personal`, `beeline personal mcp serve --http --public-url https://laptop.example.ts.net`
 
 ### `beeline mcp revoke`
@@ -596,8 +570,6 @@ beeline mcp revoke [options]
 | Option | What it does |
 |---|---|
 | `--profiles <names\|all>` | serve several profiles from one server instead of one: names, comma-separated, or all for every profile. |
-
-**Returns:** forget every login given to a browser app
 
 **Example:** `beeline personal mcp revoke`, `beeline mcp revoke --profiles all`
 
@@ -622,8 +594,6 @@ beeline mcp server start [options]
 | `--permission <key=level>` | make a permission stricter for this server only; repeat for more keys. |
 | `--profiles <names\|all>` | the server of several profiles that `mcp serve --profiles` serves: names, comma-separated, or all. |
 
-**Returns:** start the HTTP MCP server in the background
-
 **Example:** `beeline personal mcp server start --public-url https://laptop.example.ts.net`
 
 #### `beeline mcp server stop`
@@ -640,8 +610,6 @@ beeline mcp server stop [options]
 |---|---|
 | `--profiles <names\|all>` | the server of several profiles that `mcp serve --profiles` serves: names, comma-separated, or all. |
 
-**Returns:** stop the background HTTP MCP server
-
 **Example:** `beeline personal mcp server stop`
 
 #### `beeline mcp server status`
@@ -655,8 +623,6 @@ beeline mcp server status [options]
 | Option | What it does |
 |---|---|
 | `--profiles <names\|all>` | the server of several profiles that `mcp serve --profiles` serves: names, comma-separated, or all. |
-
-**Returns:** whether the HTTP MCP server runs, its login code and the apps logged in
 
 **Example:** `beeline personal mcp server status --json`
 
@@ -672,8 +638,6 @@ beeline mcp config [options]
 |---|---|
 | `--permission <key=level>` | make a permission stricter for this server only, like meetings.sync=deny; it never loosens the profile; repeat for more keys. |
 | `--profiles <names\|all>` | serve several profiles from one server instead of one: names, comma-separated, or all for every profile. |
-
-**Returns:** print the local MCP configuration of this profile, or of those --profiles names
 
 **Example:** `beeline personal mcp config`, `beeline mcp config --profiles all`
 
@@ -696,8 +660,6 @@ beeline mcp add <client> [options]
 | `--allow-writes` | acknowledge that this profile offers writing tools. |
 | `--permission <key=level>` | make a permission stricter for this server only, like meetings.sync=deny; it never loosens the profile; repeat for more keys. |
 
-**Returns:** add this profile's local MCP server to Codex or Claude Code
-
 **Example:** `beeline personal mcp add codex --allow-writes`
 
 ### `beeline mcp check`
@@ -711,8 +673,6 @@ beeline mcp check [options]
 | Option | What it does |
 |---|---|
 | `--permission <key=level>` | make a permission stricter for this server only, like meetings.sync=deny; it never loosens the profile; repeat for more keys. |
-
-**Returns:** check this profile's local MCP handshake and tool list
 
 **Example:** `beeline personal mcp check`
 
@@ -730,8 +690,6 @@ beeline upgrade [options]
 |---|---|
 | `--check` | say whether a newer version exists, and install nothing. |
 
-**Returns:** upgrade beeline with the package manager that installed it; --check only looks
-
 **Example:** `beeline upgrade --check`
 
 ## `beeline config`
@@ -745,8 +703,6 @@ the profile, the profiles that exist, and each setting with where it came from
 ```sh
 beeline config show
 ```
-
-**Returns:** the profile, the profiles that exist, and each setting with where it came from
 
 **Example:** `beeline personal config show`
 
@@ -769,8 +725,6 @@ beeline config set <setting> <value> [options]
 |---|---|
 | `--defaults` | change what every profile gets, rather than this profile. |
 
-**Returns:** save a setting to the configuration file
-
 **Example:** `beeline personal config set limit 20`
 
 ### `beeline config unset`
@@ -791,8 +745,6 @@ beeline config unset <setting> [options]
 |---|---|
 | `--defaults` | change what every profile gets, rather than this profile. |
 
-**Returns:** remove a setting from the configuration file
-
 **Example:** `beeline personal config unset limit`
 
 ### `beeline config migrate`
@@ -804,8 +756,6 @@ write each setting the file lacks at its default, keeping yours
 ```sh
 beeline config migrate
 ```
-
-**Returns:** write each setting the file lacks at its default, keeping yours
 
 **Example:** `beeline config migrate`
 
@@ -822,8 +772,6 @@ beeline config repair [options]
 | Option | What it does |
 |---|---|
 | `--dry-run` | say what it would fix, and change nothing. |
-
-**Returns:** fix the settings file's JSON syntax, keeping every value
 
 **Example:** `beeline config repair`, `beeline config repair --dry-run`
 
@@ -899,8 +847,6 @@ beeline complete [words]
 | Argument | | What it is |
 |---|---|---|
 | `words` | optional | zsh for the shell script, or command words to complete. |
-
-**Returns:** shell completion: `beeline complete zsh` prints the script to source
 
 **Example:** `beeline complete zsh`
 
