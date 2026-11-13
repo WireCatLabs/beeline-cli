@@ -40,6 +40,13 @@ Notable changes to `@wirecat/beeline-cli`. One section per version, newest first
   meeting search.
 - `README.ru.md`: getting started in Russian, from installing Node.js to connecting an agent.
 - `contracts/wirecat.json` tells WireCat Desktop what `beeline` does and that it reaches only `cloudpbx.beeline.ru`.
+- **A sync links each call's client to the Bitrix24 contact with the same phone number.** The client's number is kept
+  as its E.164 phone, and cli-core 0.651.0 links the callers a sync saved by the phone rule alone. A mobile number that
+  only the client and one contact hold links at once; a landline only proposes the link. With `b24` on the same store
+  and both accounts in the `work` scope, the calls show in `b24`'s `deals show` and `leads show` and in a person's
+  context, in the field `meetings`. Calls synced before this version link once a sync saves them again:
+  `meetings sync --rescan` for the last 30 days, `--since-time` for older ones
+  ([README](README.md#what-you-can-do)).
 
 ### Changed — may break callers
 
@@ -55,6 +62,8 @@ Notable changes to `@wirecat/beeline-cli`. One section per version, newest first
   brings the search index up to date after it transcribes, so `search all` and memo find new transcripts at once.
 - Under `BEELINE_READ_ONLY`, `meetings export --output` writes only inside a scheduled run's work folder
   (`BEELINE_WORK_FOLDER`) and is refused elsewhere with `read-only.output-outside`. From `@wirecat/cli-core` 0.643.0.
+- **A call's client is the identity `phone:+<number>`, with the `+`.** A store that holds calls synced before this
+  version keeps their old client rows beside the new ones once a sync saves those calls again.
 
 ### Fixed
 
@@ -109,6 +118,9 @@ Notable changes to `@wirecat/beeline-cli`. One section per version, newest first
   open.
 - The docs and the skill name the profile `work` throughout, say which commands MCP serves without
   `--allow-writes`, and say that a call with no speech is tried again on each run.
+- **A call's client number is read as a Russian number.** Beeline gives the 10-digit national number, and the sync
+  wrote it as `+9…`, so a call never linked to its CRM contact and its title showed the wrong number. It is now
+  `+7…`; an extension or a foreign number keeps its digits as Beeline gave them.
 
 ### Security
 
