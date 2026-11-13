@@ -27,12 +27,34 @@ Notable changes to `@wirecat/beeline-cli`. One section per version, newest first
 - `session start`, `session status` and `session end` keep the Beeline API token in the system keyring.
   `--credential-storage file` keeps it in a private file instead, not recommended. When the keyring fails, `beeline`
   uses the file by itself and says so once.
+- **A pull request adds its changelog entries as a fragment, `changes/<branch>.md`.** Open pull requests no longer
+  conflict under `## Unreleased`. `pnpm docs:check` checks each fragment, and `bin/release` collects them into the
+  version's section. An entry under `## Unreleased` still works during the move.
+- **`beeline` is published to npm as `@wirecat/beeline-cli`.** Install it with `npm install -g @wirecat/beeline-cli`;
+  `upgrade` updates it from there. `bin/release` publishes it like every other WireCat CLI.
+- `account remove --keep-data|--delete-data` forgets a profile on this computer: its Beeline token, its config entry
+  and, with `--delete-data`, its calls in the store. The token itself stays valid in the Beeline cabinet.
+- `guide` walks through the first calls, from `session start` to a call read as a dialogue; `complete` gives shell
+  completion. Both from `@wirecat/cli-core`.
+- `search meetings <words>` finds words in the transcripts and cites the call and the line, from cli-core's
+  meeting search.
+- `README.ru.md`: getting started in Russian, from installing Node.js to connecting an agent.
+- `contracts/wirecat.json` tells WireCat Desktop what `beeline` does and that it reaches only `cloudpbx.beeline.ru`.
 
 ### Changed — may break callers
 
 - `meetings transcribe --limit` is now `--max-meetings`: it caps how many calls one run transcribes, which the shared
   flag names call a budget; `--limit` means how many items an answer holds. Its answer is declared as a
   `call_transcription_report`, so `commands info` lists its fields.
+- A call's title is now its direction, manager and client's phone (`Входящий звонок · Иван Петров ↔ +7 900 …`),
+  so lists, exports and `title:` searches show who spoke. The next sync sets it on the calls already stored.
+- `meetings summary` and `meetings import` are gone: Beeline gives no summaries, and there are no transcript files to
+  import.
+- A new Beeline account is saved with the `work` scope, so a work search such as b24's `search all` includes the calls.
+- `meetings transcribe` lists a call over 60 minutes as failed (`recording.too-long`) without downloading it, and
+  brings the search index up to date after it transcribes, so `search all` and memo find new transcripts at once.
+- Under `BEELINE_READ_ONLY`, `meetings export --output` writes only inside a scheduled run's work folder
+  (`BEELINE_WORK_FOLDER`) and is refused elsewhere with `read-only.output-outside`. From `@wirecat/cli-core` 0.643.0.
 
 ### Fixed
 
@@ -77,7 +99,20 @@ Notable changes to `@wirecat/beeline-cli`. One section per version, newest first
   them on this computer. They said it connected to nothing.
 - Under `BEELINE_READ_ONLY`, a first read on a new machine answers empty and creates no `wirecat.db`. It used to fall
   back to opening the store for writing. A sync under the lock still writes what it fetches.
+- `meetings transcript` for a call with no transcript said only "(nothing)". It now says the call has no transcript
+  yet and gives the `meetings transcribe id:<call>` to run, or says the call is shorter than five seconds; `--json`
+  answers `not_found` with reason `transcript.missing` or `transcript.too-short`. `meetings export --format vtt` says
+  the same.
+- `meetings show`, `transcript` and `export` take the `ref` that `meetings list` prints (`meeting:1/375`)
+  as well as the plain id. Before, a ref failed with "expected a positive integer".
+- `SECURITY.md` and the README no longer say the repository is private: GitHub's private vulnerability reporting is
+  open.
+- The docs and the skill name the profile `work` throughout, say which commands MCP serves without
+  `--allow-writes`, and say that a call with no speech is tried again on each run.
 
 ### Security
 
 - A request that carries the API token refuses to follow a redirect, so the token goes only to Beeline.
+- `contracts/wirecat.json` now names every host `beeline` reaches, not only `cloudpbx.beeline.ru`: npm for
+  `upgrade`, Hugging Face and GitHub for `models download`. From `@wirecat/cli-base` 0.99.0.
+- Every request to Beeline goes through cli-base's `hostFetch`, which reaches only `cloudpbx.beeline.ru`.
