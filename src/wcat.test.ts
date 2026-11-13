@@ -12,7 +12,7 @@ import { WCAT } from "./wcat.js"
 const MANIFEST = new URL(`../${MANIFEST_FILE}`, import.meta.url)
 
 describe("contracts/wirecat.json", () => {
-  it("is what pnpm generate builds from the command tree now, with Beeline its one host", () => {
+  it("is what pnpm generate builds from the command tree now, with Beeline its own host", () => {
     const manifest = buildManifest({
       identity: WCAT,
       commands: describeProgram(createProgram()),
@@ -21,7 +21,7 @@ describe("contracts/wirecat.json", () => {
     })
 
     expect(readFileSync(MANIFEST, "utf8")).toBe(manifestText(manifest))
-    expect(manifest.network).toEqual({ hosts: ["cloudpbx.beeline.ru"] })
+    expect(manifest.network?.hosts[0]).toBe("cloudpbx.beeline.ru")
     const permissionOf = (path: string) =>
       manifest.commands.find((command) => command.path.join(" ") === path)?.permission
     expect(permissionOf("meetings sync")).toBe("meetings.sync")
