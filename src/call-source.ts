@@ -14,10 +14,19 @@ export const OVERLAP_MS = 3 * 60 * 60 * 1000
 const managerName = ({ firstName, lastName }: CallRecord["abonent"]) =>
   [firstName, lastName].filter((part) => part?.trim()).join(" ") || null
 
+/**
+ * The client's number as E.164, or undefined when it is none (an extension, a number Russia's plan does not read).
+ * Beeline gives the 10-digit national number; `ru` is the source's word for its country, as `e164Of` asks (NEED-2600).
+ */
+export const clientPhone = (raw: string): string | undefined => {
+  const phone = e164Of(raw.trim(), "ru")
+  return phone && /^\+[1-9]\d{6,14}$/.test(phone) ? phone : undefined
+}
+
 /** Direction, manager and client in one line, so a list, an export and a `title:` search show who spoke with whom. */
 export const callTitle = (record: CallRecord): string =>
   `${record.direction === "INBOUND" ? "Входящий" : "Исходящий"} звонок · ${managerName(record.abonent) ?? "менеджер"} ↔ ` +
-  `+${record.phone.replace(/^\+/, "")}`
+  (clientPhone(record.phone) ?? record.phone)
 
 const meetingOf = (record: CallRecord): SourceMeeting => ({
   series: null,
@@ -39,9 +48,9 @@ const meetingOf = (record: CallRecord): SourceMeeting => ({
 
 const participantsOf = (record: CallRecord): SourceParticipant[] => {
   const none = { joinedAt: null, leftAt: null, durationMs: null, sessions: null, metadata: {} }
-  // Beeline gives the number as international digits without `+`. The `phone:` id must be the same E.164 number the
-  // store keeps, or cli-core only proposes the CRM contact with that number instead of linking it (NEED-2600).
-  const phone = e164Of(`+${record.phone.replace(/^\+/, "")}`, undefined) ?? null
+  // The `phone:` id must be the same E.164 number the store keeps, or cli-core only proposes the CRM contact with that
+  // number instead of linking it (NEED-2600).
+  const phone = clientPhone(record.phone) ?? null
   return [
     {
       ...none,

@@ -6,6 +6,7 @@ import { memoryKeyring } from "@wirecat/cli-base"
 import type { FetchLike } from "@wirecat/cli-base/http"
 import { storePath } from "@wirecat/cli-core/store"
 import { afterEach, expect, it, vi } from "vitest"
+import { clientPhone } from "./call-source.js"
 import { run } from "./program.js"
 import { openBeelineStore } from "./store.js"
 import { record } from "./testing/records.js"
@@ -46,7 +47,7 @@ it("syncs Beeline's call records into the store as meetings with a manager and a
   expect(listed.code, listed.err).toBe(0)
   expect(JSON.parse(listed.out).items).toHaveLength(3)
   expect(JSON.parse(listed.out).items.map((one: { title: string }) => one.title)).toContain(
-    "Входящий звонок · Test Manager ↔ +70000000000",
+    "Входящий звонок · Test Manager ↔ +79000000000",
   )
   const inbound = JSON.parse((await ran(["work", "meetings", "list", "title:Входящий*", "--json"])).out).items
   expect(inbound).toHaveLength(1)
@@ -414,7 +415,7 @@ const clientOf = async (number: string) => {
 it("a sync links a call to the b24 contact with the same mobile number", async () => {
   process.env.BEELINE_TOKEN = "test-token"
   await crmContact("501", "Client Mobile", "8 (900) 000-00-01")
-  beeline(() => Response.json([record(501, { phone: "79000000001" })]))
+  beeline(() => Response.json([record(501, { phone: "9000000001" })]))
 
   const synced = await ran(["work", "meetings", "sync", "--since-time", "2026-10-01T00:00:00Z", "--json"])
   expect(synced.code, synced.err).toBe(0)
@@ -425,7 +426,7 @@ it("a sync links a call to the b24 contact with the same mobile number", async (
 it("a call from a landline only proposes the b24 contact with that number", async () => {
   process.env.BEELINE_TOKEN = "test-token"
   await crmContact("502", "Office Landline", "8 (495) 000-00-01")
-  beeline(() => Response.json([record(502, { phone: "74950000001" })]))
+  beeline(() => Response.json([record(502, { phone: "4950000001" })]))
 
   const synced = await ran(["work", "meetings", "sync", "--since-time", "2026-10-01T00:00:00Z", "--json"])
   expect(synced.code, synced.err).toBe(0)
@@ -440,4 +441,11 @@ it("a call from a landline only proposes the b24 contact with that number", asyn
   } finally {
     await store.close()
   }
+})
+
+it("reads Beeline's 10-digit national number as Russian and leaves an extension or a foreign number alone", () => {
+  for (const raw of ["9000000001", "79000000001", "89000000001", "+79000000001"])
+    expect(clientPhone(raw)).toBe("+79000000001")
+  expect(clientPhone("4950000001")).toBe("+74950000001")
+  for (const raw of ["1234", "0000000000", "375000000000000"]) expect(clientPhone(raw)).toBeUndefined()
 })
