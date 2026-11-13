@@ -583,7 +583,13 @@
   },
   "network": {
     "hosts": [
-      "cloudpbx.beeline.ru"
+      "cloudpbx.beeline.ru",
+      "registry.npmjs.org",
+      "huggingface.co",
+      "*.huggingface.co",
+      "*.hf.co",
+      "github.com",
+      "*.githubusercontent.com"
     ]
   },
   "desktop": {
