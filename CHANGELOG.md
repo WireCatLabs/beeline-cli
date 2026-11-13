@@ -2,7 +2,7 @@
 
 Notable changes to `@wirecat/beeline-cli`. One section per version, newest first.
 
-## Unreleased
+## 0.1.0 — 02.11.2026
 
 ### Added
 
@@ -19,6 +19,14 @@ Notable changes to `@wirecat/beeline-cli`. One section per version, newest first
   `meta.complete: false`, names the calls not reached in `remaining`, and its `next` step runs `meetings sync` again,
   which goes on from the first call it did not reach. `meetings sync --rescan` reads the last 30 days again.
 - `models download --json` writes the download's byte progress to stderr, one JSON line at most twice a second.
+- `meetings sync` copies the PBX's recorded calls into the local WireCat store, one meeting per call, with the manager
+  and the client as its people. `meetings list`, `show`, `export`, `people` and the other shared reads answer from
+  there.
+- `meetings transcribe` downloads each call's recording and turns it into a dialogue between the manager and the client,
+  with a speech model on this computer. `models list` and `models download` manage that model.
+- `session start`, `session status` and `session end` keep the Beeline API token in the system keyring.
+  `--credential-storage file` keeps it in a private file instead, not recommended. When the keyring fails, `beeline`
+  uses the file by itself and says so once.
 
 ### Changed — may break callers
 
@@ -73,16 +81,3 @@ Notable changes to `@wirecat/beeline-cli`. One section per version, newest first
 ### Security
 
 - A request that carries the API token refuses to follow a redirect, so the token goes only to Beeline.
-
-## 0.1.0 — 02.11.2026
-
-### Added
-
-- `meetings sync` copies the PBX's recorded calls into the local WireCat store, one meeting per call, with the manager
-  and the client as its people. `meetings list`, `show`, `export`, `people` and the other shared reads answer from
-  there.
-- `meetings transcribe` downloads each call's recording and turns it into a dialogue between the manager and the client,
-  with a speech model on this computer. `models list` and `models download` manage that model.
-- `session start`, `session status` and `session end` keep the Beeline API token in the system keyring.
-  `--credential-storage file` keeps it in a private file instead, not recommended. When the keyring fails, `beeline`
-  uses the file by itself and says so once.
