@@ -37,7 +37,7 @@ jobs:
       # get two cli-base copies and crash at start while every local test passes.
       checks: |
         pnpm peers check
-        bash scripts/audit.sh
+        pnpm exec cli-dev audit --family --cli dist/bin/beeline.js --differences lint/audit-differences.json
         pnpm smoke:node
 
   # WC-TOOL-6: engines allows ^22.16.0; node-ci.yml runs Node 24 only.

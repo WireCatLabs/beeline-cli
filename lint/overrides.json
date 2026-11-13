@@ -5,12 +5,5 @@
     "reason": "Keeps the short beeline command beside wcat-beeline, as gcal and mail do: the docs, the skill and the agent setups type beeline.",
     "owner": "@WireCatLabs",
     "review_after": "2027-05-06"
-  },
-  {
-    "rule": "option-role",
-    "target": "search meetings --tag",
-    "reason": "cli-core's shared search meetings declares it, as zoom-cli's does; the vocabulary has no role for it yet, and the flag is cli-core's to rename.",
-    "owner": "@WireCatLabs",
-    "review_after": "2027-05-13"
   }
 ]
