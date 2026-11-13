@@ -64,7 +64,10 @@ that page: `GET /records` lists at most 100 records per call, in order after the
 ## A call's client and the CRM contact with its number
 
 Owner, 2026-11-13 (NEED-2600 A). The client participant carries its number as `phone`, and its identity is
-`phone:<E.164>`, both from Beeline's international digits with a `+` in front. cli-core links the callers a sync saved
+`phone:<E.164>`. Beeline gives the client's 10-digit national number (`9XXXXXXXXX`, counted in the owner's store on
+2026-11-13), so `clientPhone` in `src/call-source.ts` reads it in Russia's plan: `e164Of` leaves a national number's
+country to the source, and Beeline is a Russian PBX. A number that plan does not read (an extension, a foreign number)
+keeps its raw digits in the id and gets no phone. cli-core links the callers a sync saved
 to the CRM contact that holds the same number: at once for a mobile only the two of them hold, as a proposal for a
 landline, which everyone in an office shares. It joins only when the identity is exactly `phone:<E.164>`, so the `+`
 must be there. The manager is keyed by Beeline's `abonent` and gets no phone: an extension is the company's, not a

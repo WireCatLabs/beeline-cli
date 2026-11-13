@@ -3,7 +3,7 @@ import type { CallRecord } from "../beeline-api.js"
 export const record = (id: number, overrides: Partial<CallRecord> = {}): CallRecord => ({
   id: String(id),
   externalId: `ext-${id}`,
-  phone: "70000000000",
+  phone: "9000000000",
   direction: "OUTBOUND",
   date: Date.UTC(2026, 9, 20, 10) + id * 60_000,
   duration: 50_140,
