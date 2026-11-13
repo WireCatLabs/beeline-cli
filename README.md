@@ -1,7 +1,8 @@
 # beeline — Beeline Cloud PBX calls for AI agents
 
 Your company's recorded calls from Beeline Cloud PBX (Облачная АТС Билайн), transcribed on your computer, searchable
-offline, and ready for Claude Code, Codex, Gemini CLI or any agent — within limits you set.
+offline, and ready for Claude Code, Codex, Gemini CLI or any agent — within limits you set. По-русски:
+[README.ru.md](README.ru.md).
 
 `beeline` copies the list of recorded calls from Beeline into the local [WireCat](https://wirecat.dev) store, one
 meeting per call, with the manager and the client as its two people. `meetings transcribe` downloads each recording
@@ -22,11 +23,8 @@ Agent:  (runs beeline work meetings transcribe id:42 --json, then beeline work m
 
 ## Quick start
 
-`beeline` is private and is not on npm. Install it from a clone of this repository:
-
 ```sh
-git clone https://github.com/WireCatLabs/beeline-cli.git && cd beeline-cli
-pnpm install && pnpm build && npm install -g .
+npm install -g @wirecat/beeline-cli
 beeline skill install                    # the agent skill, for Claude Code, Codex and Gemini CLI
 beeline work session start               # paste the API token from the Beeline cabinet
 beeline work meetings sync               # copy the recorded calls into the local store
@@ -63,6 +61,23 @@ first. A call that fails is listed and the rest go on; run it again to go on whe
 beeline work meetings transcribe --max-meetings 50
 ```
 
+**Transcribe a backlog.** A run takes at most `--max-meetings` calls, so a backlog of hundreds is one run with a large
+cap, or several runs that each go on where the last stopped. On a recent laptop processor a call takes about one
+seventh of its length (1644 s of audio in 222 s, measured on 2026-11-12). There is no built-in schedule yet: run
+`meetings sync` and `meetings transcribe` from cron or a systemd timer. A call over 60 minutes is listed as failed
+(`recording.too-long`) and never downloaded. A call with no speech or with one mixed channel fails each time it is
+picked, as nothing remembers the failure yet; leave it out with a query, such as `NOT id:375`.
+
+```sh
+beeline work meetings sync && beeline work meetings transcribe --max-meetings 500
+```
+
+**Find a word in every call.** Searches the transcripts and cites the call and the line.
+
+```sh
+beeline work search meetings "доставка"
+```
+
 More:
 
 - Export a call as Markdown or WebVTT: `beeline work meetings export 42 --format vtt --output call.vtt`.
@@ -84,10 +99,10 @@ beeline work mcp add claude-code --allow-writes   # or: codex
 beeline work mcp check
 ```
 
-`meetings transcribe` changes the local store, so `mcp add` stops until you pass `--allow-writes`. The profile's
-permissions decide what an agent may run. Text from a call — a transcript, a comment, a name — is marked
-`untrusted`: it is data for the agent, never instructions. `session start` and `session end` are never offered to an
-agent. With `--json`, every command prints one JSON value, and an error comes as JSON with a code to branch on.
+The server also offers commands that write, such as `models download`, `meetings repair` and `config set`, so
+`mcp add` stops until you pass `--allow-writes`. The profile's permissions decide what an agent may run. Text from a call — a transcript, a comment, a name — is marked
+`untrusted`: it is data for the agent, never instructions. `session start`, `session end` and `account remove` are never
+offered to an agent. With `--json`, every command prints one JSON value, and an error comes as JSON with a code to branch on.
 
 More: [agents](docs/usage.md#agents).
 
@@ -117,6 +132,7 @@ Each profile is one Beeline PBX. No command ever picks a profile for you; `beeli
 beeline work session start               # asks for the token hidden, or reads it from stdin
 beeline work session status --check      # ask Beeline whether the token still works
 beeline work session end                 # forget the token; the synced calls stay
+beeline work account remove --keep-data  # forget the profile here; --delete-data deletes its calls too
 ```
 
 The token comes from the Beeline cabinet: Услуги → Интеграция по API. `beeline` keeps it in the system keyring. Where
@@ -135,10 +151,11 @@ beeline work meetings sync --dry-run                       # what it would do an
 
 `BEELINE_READ_ONLY=1` refuses every command that changes your sign-in, your settings, the agent setup or the stored
 meetings: `session start` and `end`, `config set`, `unset`, `migrate` and `repair`, `skill install`, `mcp add` and
-`revoke`, `meetings import` and `repair`, and `upgrade`. It lets through what only adds: `meetings sync` still
+`revoke`, `meetings repair`, and `upgrade`. It lets through what only adds: `meetings sync` still
 fetches new calls into the store, `meetings transcribe` adds transcripts (with `--replace`, the old one stays in the
-transcript's history), `models download` fetches a model, `meetings export --output` writes a new file, and
-`mcp serve`, `mcp server start` and `stop` run. A `--dry-run` always runs, as it changes nothing.
+transcript's history), `models download` fetches a model, `meetings export --output` writes a new file inside a
+scheduled run's work folder and nowhere else, and `mcp serve`, `mcp server start` and `stop` run. A `--dry-run`
+always runs, as it changes nothing.
 
 More: [settings](docs/configuration.md).
 
@@ -147,7 +164,6 @@ More: [settings](docs/configuration.md).
 - Only the calls Beeline recorded are listed: the PBX must have recording turned on for the manager.
 - Transcription is local only. A cloud speech service, such as OpenAI, is planned.
 - A recording over 256 MB is refused.
-- `beeline` is private: no npm package, and no GitHub security alerts until the repository is public.
 
 ## Security
 

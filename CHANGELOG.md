@@ -20,11 +20,6 @@ Notable changes to `@wirecat/beeline-cli`. One section per version, newest first
   which goes on from the first call it did not reach. `meetings sync --rescan` reads the last 30 days again.
 - `models download --json` writes the download's byte progress to stderr, one JSON line at most twice a second.
 
-### Removed
-
-- Publishing to npm: `beeline` is private, and `npm publish` and `bin/release` refuse it. Install it from a clone, as
-  [installation](docs/installation.md) says.
-
 ### Changed — may break callers
 
 - `meetings transcribe --limit` is now `--max-meetings`: it caps how many calls one run transcribes, which the shared

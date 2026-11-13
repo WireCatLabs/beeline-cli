@@ -1,6 +1,15 @@
 {
   "files": {
-    "includes": ["**", "!**/node_modules", "!**/dist", "!.worktrees", "!.claude", "!pnpm-lock.yaml", "!config/wirecat"]
+    "includes": [
+      "**",
+      "!**/node_modules",
+      "!**/dist",
+      "!.worktrees",
+      "!.claude",
+      "!pnpm-lock.yaml",
+      "!config/wirecat",
+      "!contracts/wirecat.json"
+    ]
   },
   "extends": ["./config/wirecat/biome.base.json"],
   "plugins": [

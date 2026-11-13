@@ -1,8 +1,9 @@
 import { chmodSync, mkdirSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs"
 import { join } from "node:path"
+import { checkGuide } from "@wirecat/cli-core/cli"
 import { expect, it } from "vitest"
 import { IDENTITY } from "./identity.js"
-import { run } from "./program.js"
+import { createProgram, run } from "./program.js"
 
 const ran = async (argv: string[]) => {
   const out: string[] = []
@@ -24,7 +25,7 @@ const json = (text: string) => {
 it("lists the required root commands and config", async () => {
   const { code, out } = await ran(["commands", "--json"])
   expect(code).toBe(0)
-  const required = ["commands", "doctor", "skill", "mcp", "upgrade", "config", "runs"]
+  const required = ["commands", "doctor", "skill", "mcp", "upgrade", "config", "runs", "guide", "complete"]
   expect(JSON.parse(out).commands).toEqual(
     expect.arrayContaining(required.map((name) => expect.objectContaining({ name }))),
   )
@@ -169,4 +170,11 @@ it("a failed run keeps the words typed, and record_input false masks them", asyn
   } finally {
     expect((await ran(["personal", "config", "unset", "record_input"])).code).toBe(0)
   }
+})
+
+it("guide lists the scenarios, and every step is a command beeline has", async () => {
+  const { code, out, err } = await ran(["guide", "--json"])
+  expect(code, err).toBe(0)
+  expect(JSON.parse(out).items.map((one: { name: string }) => one.name)).toContain("first-calls")
+  expect(await checkGuide(createProgram, { packageRoot: process.cwd() })).toEqual([])
 })

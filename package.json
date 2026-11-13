@@ -1,7 +1,6 @@
 {
   "name": "@wirecat/beeline-cli",
   "version": "0.1.0",
-  "private": true,
   "description": "Beeline Cloud PBX call recordings as meetings: sync the call records, transcribe the calls on this computer, search and export them",
   "license": "Apache-2.0",
   "author": "Viacheslav Ptsarev",
@@ -21,7 +20,10 @@
   "files": [
     "dist",
     "skills",
+    "scenarios",
+    "contracts/wirecat.json",
     "/README.md",
+    "/README.ru.md",
     "CHANGELOG.md",
     "LICENSE"
   ],
@@ -35,13 +37,13 @@
     "test:slow": "vitest run --reporter=json --outputFile=coverage/tests.json >/dev/null; cli-dev slow-tests",
     "test:matrix": "vitest run >/dev/null && pnpm build >/dev/null && pnpm test:matrix:check",
     "test:matrix:check": "cli-dev test-matrix --program scripts/command-program.ts --untested scripts/test-matrix-untested.ts --name beeline --check && git diff --exit-code -- docs/dev/test-matrix.md",
-    "generate": "pnpm build && node --experimental-strip-types scripts/commands.ts",
-    "generate:check": "pnpm build && node --experimental-strip-types scripts/commands.ts --check",
+    "generate": "pnpm build && node --experimental-strip-types scripts/commands.ts && cli-dev manifest --program dist/program.js --identity dist/wcat.js",
+    "generate:check": "pnpm build && node --experimental-strip-types scripts/commands.ts --check && cli-dev manifest --program dist/program.js --identity dist/wcat.js --check",
     "smoke": "node --experimental-strip-types scripts/smoke.ts",
     "smoke:bun": "bun scripts/smoke.ts && bun scripts/smoke-bundle.ts",
     "smoke:node": "node --experimental-strip-types scripts/smoke-bundle.ts",
     "package:check": "pnpm smoke",
-    "docs:check": "cli-dev docs-check --rules scripts/docs-rules.ts --pages && node --experimental-strip-types scripts/changelog-fragments.ts --rules scripts/docs-rules.ts && pnpm docs:spell && rumdl check --config config/wirecat/rumdl.toml README.md SECURITY.md CHANGELOG.md CLAUDE.md AGENTS.md docs/*.md docs/dev/*.md && pnpm docs:lint",
+    "docs:check": "cli-dev docs-check --rules scripts/docs-rules.ts --pages && node --experimental-strip-types scripts/changelog-fragments.ts --rules scripts/docs-rules.ts && pnpm docs:spell && rumdl check --config config/wirecat/rumdl.toml README.md README.ru.md SECURITY.md CHANGELOG.md CLAUDE.md AGENTS.md docs/*.md docs/dev/*.md && pnpm docs:lint",
     "docs:lint": "markdownlint-cli2",
     "contracts:check": "cli-contract contracts/plan.json",
     "security:no-leak": "cli-testing security no-leak . contracts/no-leak.json",
@@ -54,11 +56,11 @@
     "release:check": "pnpm standards:check && pnpm lint && pnpm typecheck && pnpm test:coverage && pnpm lint:commands && pnpm audit:commands && pnpm contracts:check && pnpm test:matrix:check && pnpm docs:check && pnpm generate:check && pnpm version:check && pnpm security:no-leak && pnpm package:check",
     "prepare": "lefthook install || true",
     "prepack": "pnpm build",
-    "docs:spell": "cspell lint --config cspell.json --no-progress --no-summary README.md SECURITY.md CHANGELOG.md AGENTS.md CLAUDE.md 'docs/*.md' 'skills/**/*.md'"
+    "docs:spell": "cspell lint --config cspell.json --no-progress --no-summary README.md README.ru.md SECURITY.md CHANGELOG.md AGENTS.md CLAUDE.md 'docs/*.md' 'skills/**/*.md'"
   },
   "dependencies": {
-    "@wirecat/cli-base": "0.80.9",
-    "@wirecat/cli-core": "0.608.0",
+    "@wirecat/cli-base": "0.98.0",
+    "@wirecat/cli-core": "0.647.0",
     "commander": "15.0.0",
     "valibot": "1.5.0"
   },
@@ -77,5 +79,8 @@
     "rumdl": "0.3.0",
     "typescript": "7.0.2",
     "vitest": "5.0.5"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }

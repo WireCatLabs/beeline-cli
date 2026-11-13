@@ -117,6 +117,30 @@ beeline session list
 
 **Example:** `beeline session list`, `beeline session list --json`
 
+## `beeline account`
+
+this profile on this computer
+
+### `beeline account remove`
+
+sign the profile out, then forget it on this computer: its settings, its saved sign-in and its files; --keep-data leaves its messages in the store, where search still finds them, --delete-data deletes them; asks first, or --yes
+
+**Changes something on this computer only.**
+
+```sh
+beeline account remove [options]
+```
+
+| Option | What it does |
+|---|---|
+| `--keep-data` | leave what the store holds of this account, still searchable. |
+| `--delete-data` | delete what the store and the tool's own files hold of this account. |
+| `--dry-run` | list what it would remove and keep, and change nothing. |
+
+**Returns:** account removal — profile, data, dry_run, account, revoked, config_file, removed, kept; every field: beeline commands info account remove
+
+**Example:** `beeline personal account remove --keep-data --dry-run`, `beeline personal account remove --delete-data --yes`
+
 ## `beeline meetings`
 
 stored meetings and their records
@@ -142,7 +166,7 @@ beeline meetings list [query] [options]
 
 **Returns:** meeting — ref, id, provider, account, title, url, started_at, ended_at, and 8 more; every field: beeline commands info meetings list
 
-**Next usually:** `beeline meetings show <meeting>`, `beeline meetings transcript <meeting>`, `beeline meetings summary <meeting>`
+**Next usually:** `beeline meetings show <meeting>`, `beeline meetings transcript <meeting>`, `beeline meetings export <meeting>`
 
 **Example:** `beeline work meetings list --limit 20 --json`
 
@@ -156,7 +180,7 @@ beeline meetings show <meeting> [options]
 
 | Argument | | What it is |
 |---|---|---|
-| `meeting` | required | stored meeting id. |
+| `meeting` | required | stored call id, or the ref meetings list prints (meeting:1/375). |
 
 | Option | What it does |
 |---|---|
@@ -165,7 +189,7 @@ beeline meetings show <meeting> [options]
 
 **Returns:** meeting details — ref, id, provider, account, title, url, started_at, ended_at, and 16 more; every field: beeline commands info meetings show
 
-**Next usually:** `beeline meetings transcript <meeting>`, `beeline meetings summary <meeting>`, `beeline meetings export <meeting>`
+**Next usually:** `beeline meetings transcript <meeting>`, `beeline meetings export <meeting>`
 
 **Example:** `beeline work meetings show 1 --json`
 
@@ -179,7 +203,7 @@ beeline meetings transcript <meeting> [options]
 
 | Argument | | What it is |
 |---|---|---|
-| `meeting` | required | stored meeting id. |
+| `meeting` | required | stored call id, or the ref meetings list prints (meeting:1/375). |
 
 | Option | What it does |
 |---|---|
@@ -190,29 +214,6 @@ beeline meetings transcript <meeting> [options]
 **Returns:** meeting transcript — ref, meeting, source, language, superseded_at, created_at, lines; every field: beeline commands info meetings transcript
 
 **Example:** `beeline work meetings transcript 1 --json`
-
-### `beeline meetings summary`
-
-show stored meeting summaries
-
-```sh
-beeline meetings summary <meeting> [options]
-```
-
-| Argument | | What it is |
-|---|---|---|
-| `meeting` | required | stored meeting id. |
-
-| Option | What it does |
-|---|---|
-| `--json` | one JSON value. |
-| `--jsonl` | one JSON object per item. |
-
-**Returns:** meeting summary — id, meeting, source, title, overview, sections, next_steps, content, and 3 more; every field: beeline commands info meetings summary
-
-**Next usually:** `beeline meetings show <meeting>`, `beeline meetings transcript <meeting>`, `beeline meetings export <meeting>`
-
-**Example:** `beeline work meetings summary 1 --json`
 
 ### `beeline meetings export`
 
@@ -226,7 +227,7 @@ beeline meetings export <meeting> [options]
 
 | Argument | | What it is |
 |---|---|---|
-| `meeting` | required | stored meeting id. |
+| `meeting` | required | stored call id, or the ref meetings list prints (meeting:1/375). |
 
 | Option | What it does |
 |---|---|
@@ -286,29 +287,6 @@ beeline meetings sync [options]
 **Returns:** meeting ingestion — meetings, participants, transcript_rows, summaries, warnings, timezone; every field: beeline commands info meetings sync
 
 **Example:** `beeline work meetings sync --since-time 2026-08-01T00:00:00Z --json`
-
-### `beeline meetings import`
-
-import downloaded meeting transcripts
-
-**Changes something on this computer only.**
-
-```sh
-beeline meetings import <folder> [options]
-```
-
-| Argument | | What it is |
-|---|---|---|
-| `folder` | required | folder of transcripts downloaded from the provider. |
-
-| Option | What it does |
-|---|---|
-| `--json` | one JSON value. |
-| `--jsonl` | one JSON object per item. |
-
-**Returns:** meeting ingestion — meetings, participants, transcript_rows, summaries, warnings, timezone; every field: beeline commands info meetings import
-
-**Example:** `beeline work meetings import ./transcripts --json`
 
 ### `beeline meetings repair`
 
@@ -379,6 +357,44 @@ beeline events list [query] [options]
 
 **Example:** `beeline work events list --json`
 
+## `beeline search`
+
+search the stored resources
+
+### `beeline search meetings`
+
+find words in stored meetings, indexing new ones first
+
+```sh
+beeline search meetings <query> [options]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `query` | required | words, OR, (groups), -word, "a phrase", "a b"\~N (within N lines), exact:word, from:"Name" (who said the line); date>=30d, project:, tag:, topic: choose meetings; a word also matches its other forms and spellings speech recognition garbled. |
+
+| Option | What it does |
+|---|---|
+| `--meeting-id <id>` | only this stored meeting. |
+| `--identity-id <id>` | meetings with this participant identity; does not say who spoke a hit. |
+| `--person-id <id>` | meetings with a participant linked to this person. |
+| `--event-id <id>` | only meetings linked to this stored event. |
+| `--series-id <id>` | only meetings in this stored series. |
+| `--project <project>` | meetings confirmed in this project, by name, key or alias. |
+| `--tag <name>` | meetings with this tag, by name or alias. |
+| `--topic-name <name>` | meetings with this topic, by name or alias. |
+| `--since-time <time>` | meetings starting at or after this ISO 8601 date or time. |
+| `--until-time <time>` | meetings starting at or before this ISO 8601 date or time; a date alone covers that whole local day. |
+| `--limit <n>` | how many hits, 1 through 1000 (default 100). |
+| `--cursor <cursor>` | continue from the previous page's page.next_cursor, with the same query and filters. |
+| `--max-read-bytes <bytes>` | most stored bytes to read, 1 through 67108864 (default 4194304). |
+
+**Returns:** meeting hit — ref, meeting, scope, id, excerpt, offset_ms, language, line, and 5 more; every field: beeline commands info search meetings
+
+**Next usually:** `beeline meetings show <meeting>`, `beeline meetings transcript <meeting>`, `beeline meetings export <meeting>`
+
+**Example:** `beeline work search meetings "доставка" --json`
+
 ## `beeline models`
 
 models that run on this machine
@@ -395,7 +411,7 @@ beeline models list [query]
 |---|---|---|
 | `query` | optional | field:value terms that narrow the list — the fields are below. |
 
-**Returns:** model — id, kind, title, languages, size_bytes, downloaded, default, path, and 1 more; every field: beeline commands info models list
+**Returns:** model — id, kind, title, languages, size_bytes, downloaded, default, path, and 6 more; every field: beeline commands info models list
 
 **Next usually:** `beeline models download <model>`
 
@@ -418,9 +434,9 @@ beeline models download <model> [options]
 | Option | What it does |
 |---|---|
 | `--offline` | refuse a download that needs the network. |
-| `--accept-terms` | accept the model's licence terms, for a model that has its own. |
+| `--accept-terms` | no longer needed; kept so older scripts still run. |
 
-**Returns:** model — id, kind, title, languages, size_bytes, downloaded, default, path, and 1 more; every field: beeline commands info models download
+**Returns:** model — id, kind, title, languages, size_bytes, downloaded, default, path, and 6 more; every field: beeline commands info models download
 
 **Example:** `beeline models download parakeet-v3`
 
@@ -439,6 +455,41 @@ beeline doctor [options]
 **Returns:** the state this installation is in, without connecting unless --online
 
 **Example:** `beeline doctor`, `beeline doctor --json`
+
+### `beeline doctor reports`
+
+problem reports
+
+#### `beeline doctor reports show`
+
+what a problem report holds; writes nothing
+
+```sh
+beeline doctor reports show
+```
+
+**Returns:** what a report holds and never holds, and where to send it; writes nothing
+
+**Example:** `beeline doctor reports show`
+
+#### `beeline doctor reports create`
+
+write a problem report to a file, and say where to send it
+
+**Changes something on this computer only.**
+
+```sh
+beeline doctor reports create [options]
+```
+
+| Option | What it does |
+|---|---|
+| `--run <id>` | the run the report is about; the newest failed one if not given. |
+| `--output <file>` | where to write it; a new file in this directory if not given. |
+
+**Returns:** the report file written: its path, the run it is about, and where to send it
+
+**Example:** `beeline doctor reports create --output ./problem-report.json`
 
 ## `beeline skill`
 
@@ -489,6 +540,22 @@ beeline skill status
 **Returns:** whether the installed instructions for AI agents match this version
 
 **Example:** `beeline skill status`, `beeline skill status --json`
+
+## `beeline guide`
+
+scenarios: the commands for a common task, in order, and why each
+
+```sh
+beeline guide [name]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `name` | optional | one scenario; without it, the list. |
+
+**Returns:** scenarios: the commands for a common task, in order, and why each
+
+**Example:** `beeline guide`, `beeline guide first-calls --json`
 
 ## `beeline mcp`
 
@@ -695,7 +762,7 @@ beeline config set <setting> <value> [options]
 
 | Argument | | What it is |
 |---|---|---|
-| `setting` | required | one of: limit, timeout_ms, color, record, record_input, keep_runs_for_days, keep_successful_runs_for_days, runs_size_limit_mb, permissions, requests_per_minute, search_reranker, embedding_provider, embedding_model, embedding_base_url, embedding_dims, models, update_check, skill_hint, search_stemmers.cyrillic, search_stemmers.latin, crm.<provider>:<account>.links, crm.<provider>:<account>.company-types. |
+| `setting` | required | one of: limit, timeout_ms, color, record, record_input, keep_runs_for_days, keep_successful_runs_for_days, keep_store_runs_for_days, runs_size_limit_mb, permissions, requests_per_minute, search_reranker, embedding_provider, embedding_model, embedding_base_url, embedding_dims, models, update_check, skill_hint, search_stemmers.cyrillic, search_stemmers.latin, owner_languages, crm.<provider>:<account>.links, crm.<provider>:<account>.company-types, crm.<provider>:<account>.scope, crm.<provider>:<account>.unassigned, crm.<provider>:<account>.self, crm.<provider>:<account>.stage-tasks, crm.<provider>:<account>.activities. |
 | `value` | required | a number, true or false; for a group tg:work,max:Alice,email:me@x. |
 
 | Option | What it does |
@@ -718,7 +785,7 @@ beeline config unset <setting> [options]
 
 | Argument | | What it is |
 |---|---|---|
-| `setting` | required | one of: limit, timeout_ms, color, record, record_input, keep_runs_for_days, keep_successful_runs_for_days, runs_size_limit_mb, permissions, requests_per_minute, search_reranker, embedding_provider, embedding_model, embedding_base_url, embedding_dims, models, update_check, skill_hint, search_stemmers.cyrillic, search_stemmers.latin, crm.<provider>:<account>.links, crm.<provider>:<account>.company-types. |
+| `setting` | required | one of: limit, timeout_ms, color, record, record_input, keep_runs_for_days, keep_successful_runs_for_days, keep_store_runs_for_days, runs_size_limit_mb, permissions, requests_per_minute, search_reranker, embedding_provider, embedding_model, embedding_base_url, embedding_dims, models, update_check, skill_hint, search_stemmers.cyrillic, search_stemmers.latin, owner_languages, crm.<provider>:<account>.links, crm.<provider>:<account>.company-types, crm.<provider>:<account>.scope, crm.<provider>:<account>.unassigned, crm.<provider>:<account>.self, crm.<provider>:<account>.stage-tasks, crm.<provider>:<account>.activities. |
 
 | Option | What it does |
 |---|---|
@@ -820,6 +887,22 @@ beeline runs path <run-id>
 **Returns:** run location — path; every field: beeline commands info runs path
 
 **Example:** `beeline personal runs path run-101`
+
+## `beeline complete`
+
+shell completion: `beeline complete zsh` prints the script to source
+
+```sh
+beeline complete [words]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `words` | optional | zsh for the shell script, or command words to complete. |
+
+**Returns:** shell completion: `beeline complete zsh` prints the script to source
+
+**Example:** `beeline complete zsh`
 
 ## Exit codes
 

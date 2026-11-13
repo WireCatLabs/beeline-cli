@@ -1,6 +1,7 @@
 {
   "globs": [
     "README.md",
+    "README.ru.md",
     "SECURITY.md",
     "CHANGELOG.md",
     "AGENTS.md",

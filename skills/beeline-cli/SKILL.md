@@ -5,7 +5,7 @@ description: Use beeline, the WireCat CLI for Beeline Cloud PBX call recordings,
 
 # beeline
 
-Every account command starts with the owner's profile: `beeline personal config show`. Never pick a profile yourself; if none
+Every account command starts with the owner's profile: `beeline work config show`. Never pick a profile yourself; if none
 is given, run a command without one and read the profiles the error lists.
 
 Find your way with the tool itself, not this file:
@@ -13,6 +13,16 @@ Find your way with the tool itself, not this file:
 - `beeline commands --json` is the full command tree; `beeline commands config --json` one group.
 - `beeline help config set` is one command's help, with what it returns.
 - `beeline doctor --json` says what is set up on this computer.
+
+## Calls
+
+- A meeting is one phone call. Its title carries the direction, the manager and the client's phone:
+  `Входящий звонок · Иван Петров ↔ +7 900 …`.
+- A transcript is a dialogue: channel 0 is «Менеджер», channel 1 is «Клиент».
+- The order is `meetings sync`, then `meetings transcribe`, then `search meetings "words"`; `from:Клиент` or
+  `from:Менеджер` narrows a search to one side. `meetings transcript <id or ref>` reads one call.
+- A call with no transcript answers `not_found` with reason `transcript.missing` and the `meetings transcribe id:<id>`
+  to run.
 
 ## Rules
 

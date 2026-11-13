@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
-# Runs this checkout's build of `beeline` against the owner's live Beeline account, read-only: it lists call records
-# and writes nothing to Beeline. The token is BEELINE_TOKEN when it is set, else the keyring entry `session start`
-# keeps (service beeline-cli, account token:<profile>); it reaches beeline only as BEELINE_TOKEN and is never printed.
+# Runs this checkout's build of `beeline` against the owner's live Beeline account, read-only: it lists call records,
+# transcribes the newest one with the downloaded local model, and writes nothing to Beeline. The token is BEELINE_TOKEN
+# when it is set, else the keyring entry `session start` keeps (service beeline-cli, account token:<profile>); it
+# reaches beeline only as BEELINE_TOKEN and is never printed.
 # Config, state and the store are a throwaway folder: a branch build must not migrate the owner's real store.
 # Only when every step passed does it record the check in docs/dev/live-checks.txt, which bin/release checks.
 #
@@ -63,9 +64,31 @@ counted() {
 }
 
 step session status --check
-since=$(node -p 'new Date(Date.now() - 3 * 864e5).toISOString().slice(0, 10) + "T00:00:00Z"')
+since=$(node -p 'new Date(Date.now() - 7 * 864e5).toISOString().slice(0, 10) + "T00:00:00Z"')
 counted meetings sync --since-time "$since"
 counted meetings list --limit 3
+
+# The owner's downloaded model, linked in read-only use: a fresh download per check would take minutes.
+models="${XDG_DATA_HOME:-$HOME/.local/share}/WireCat/models/audio"
+if [ -d "$models/gigaam-v3" ]; then
+  mkdir -p "$sandbox/data/WireCat/models"
+  ln -s "$models" "$sandbox/data/WireCat/models/audio"
+  printf '\n== beeline %s meetings transcribe --max-meetings 1\n' "$profile"
+  if ! beeline meetings transcribe --max-meetings 1 --json | node -e '
+    let s = ""
+    process.stdin.on("data", (d) => (s += d)).on("end", () => {
+      const { transcribed = 0, audio_seconds = 0, failed = [], remaining = 0 } = JSON.parse(s).item ?? {}
+      console.log(`${transcribed} transcribed, ${Math.round(audio_seconds)} s of audio, ${remaining} remaining, ` +
+        `failed: ${failed.map((f) => f.reason).join(", ") || "none"}`)
+      process.exit(transcribed >= 1 && failed.length === 0 ? 0 : 1)
+    })'; then
+    echo "!! failed: meetings transcribe"
+    failed=1
+  fi
+else
+  echo "!! no gigaam-v3 in $models: run beeline models download gigaam-v3 once" >&2
+  failed=1
+fi
 
 if [ "$failed" -ne 0 ]; then
   echo "a step failed — nothing recorded" >&2

@@ -4,9 +4,9 @@ Settings live in one file, `config.json`, in the folder `beeline doctor` shows. 
 and `defaults` apply to every profile. This page lists how to see and change them.
 
 ```sh
-beeline personal config show
-beeline personal config set limit 50
-beeline personal config unset limit
+beeline work config show
+beeline work config set limit 50
+beeline work config unset limit
 ```
 
 `config show` lists each setting and where it came from: the file, a variable or the default.

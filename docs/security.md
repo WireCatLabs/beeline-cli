@@ -16,13 +16,13 @@ What WireCat CLIs share — the keyring, permissions, MCP, run records and what 
 
 - The token comes from the Beeline cabinet: Услуги → Интеграция по API. Anyone who holds it can read and delete
   every recording of the PBX, so treat it like a password.
-- `beeline personal session start` reads it hidden or from stdin, checks it against Beeline, and only then keeps it in
+- `beeline work session start` reads it hidden or from stdin, checks it against Beeline, and only then keeps it in
   the system keyring. Where the keyring fails, it goes to a file only you can read, and `beeline` says so once.
   `BEELINE_TOKEN` in the environment is read before both.
 - The token is sent only in the `X-MPBX-API-AUTH-TOKEN` request header. It never appears in a link, an error, a run
   record or the output. From what Beeline answers with an error, only its short error code is kept: its description
   can quote a phone number.
-- `beeline personal session end` forgets the token on this computer. The calls already synced stay.
+- `beeline work session end` forgets the token on this computer. The calls already synced stay.
 
 ## Recordings and speech
 
@@ -51,7 +51,7 @@ command's answer is where a call you asked for is allowed to appear.
 `beeline doctor` lists a file or folder that other users can read under `files.problems`, with the `chmod` that fixes
 it. Windows is not checked.
 
-`beeline personal mcp serve --http` listens on `127.0.0.1` only. `beeline personal mcp revoke` ends every login it
+`beeline work mcp serve --http` listens on `127.0.0.1` only. `beeline work mcp revoke` ends every login it
 gave.
 
 Report a vulnerability as [SECURITY.md](https://github.com/WireCatLabs/beeline-cli/blob/main/SECURITY.md) says.

@@ -13,6 +13,7 @@ import {
   overrideSharedContract,
   ProfileTokenStore,
   type RunOptions,
+  readOnlyLockOf,
   readsOverMcp,
   refuseOffline,
   renderAnswer,
@@ -21,10 +22,10 @@ import {
   writeNewFile,
   writesNewFileOnlyWith,
 } from "@wirecat/cli-core/cli"
-import type { MeetingSource, MeetingStore } from "@wirecat/cli-core/meetings"
-import { addMeetingCommands, type MeetingCommandDeps } from "@wirecat/cli-core/meetings/cli"
+import { type MeetingSource, type MeetingStore, parseMeetingReference } from "@wirecat/cli-core/meetings"
+import { addMeetingCommands, addMeetingSearchCommand, type MeetingCommandDeps } from "@wirecat/cli-core/meetings/cli"
 import type { MessageStore } from "@wirecat/cli-core/store"
-import { Command } from "commander"
+import { Command, type Command as CommandType, InvalidArgumentError } from "commander"
 import type { BeelineApi } from "../beeline.js"
 import { configuration } from "../config.js"
 import { IDENTITY } from "../identity.js"
@@ -33,6 +34,8 @@ import { transcribeCommand } from "./transcribe.js"
 interface Opened {
   store: MessageStore
   accountId: number
+  profile: string
+  indexes: boolean
   env: NodeJS.ProcessEnv
   api: () => BeelineApi
   source: () => MeetingSource
@@ -50,13 +53,12 @@ const EXAMPLES: Record<string, string> = {
   "meetings list": "--limit 20",
   "meetings show": "1",
   "meetings transcript": "1",
-  "meetings summary": "1",
   "meetings export": "1 --format markdown",
   "meetings people": '"Test Manager"',
   "meetings sync": "--since-time 2026-08-01T00:00:00Z",
   "meetings repair": "",
-  "meetings import": "./transcripts",
   "events list": "",
+  "search meetings": '"доставка"',
 }
 
 const withExample = (leaf: Command) => {
@@ -69,6 +71,45 @@ const withExample = (leaf: Command) => {
   if (hasSharedContract(leaf))
     overrideSharedContract(leaf, "beeline's examples name its profile and a call id.", change)
   else change(leaf)
+}
+
+/** The id `meetings list` shows, or its `ref`: `375` and `meeting:1/375` name the same call. */
+const meetingId = (text: string): number => {
+  if (/^[1-9]\d*$/.test(text) && Number.isSafeInteger(Number(text))) return Number(text)
+  try {
+    return parseMeetingReference(text).meetingId
+  } catch {
+    throw new InvalidArgumentError("expected a call id or the ref meetings list prints, such as 375 or meeting:1/375")
+  }
+}
+
+const TAKES_A_MEETING = ["meetings show", "meetings transcript", "meetings export"]
+const UNUSED = new Set(["summary", "import"])
+
+const acceptRef = (leaf: CommandType) => {
+  const [argument] = leaf.registeredArguments
+  if (!argument || !TAKES_A_MEETING.includes(pathOf(leaf).join(" "))) return
+  overrideSharedContract(leaf, "beeline takes the ref meetings list prints as well as the plain id.", () => {
+    argument.description = "stored call id, or the ref meetings list prints (meeting:1/375)"
+    argument.argParser(meetingId)
+  })
+}
+
+/** A call with no current transcript, said plainly with the step that makes one; cli-core prints an empty list. */
+const noTranscript = async (store: MeetingStore, id: number, profile: string): Promise<CliError | undefined> => {
+  const details = await store.meeting(id)
+  if (!details) return undefined
+  if (details.transcripts.some((one) => one.transcript.supersededAt === null && one.transcript.deletedAt === null))
+    return undefined
+  const short = (details.meeting.durationMs ?? 0) < 5_000
+  return new CliError(
+    "not_found",
+    short
+      ? `call ${id} is shorter than five seconds, so meetings transcribe skips it; run \`${IDENTITY.command} ${profile} ` +
+          `meetings transcribe id:${id}\` to transcribe it anyway`
+      : `call ${id} has no transcript yet; run \`${IDENTITY.command} ${profile} meetings transcribe id:${id}\``,
+    { reason: short ? "transcript.too-short" : "transcript.missing", meeting: id },
+  )
 }
 
 const goOn = (command: string, step: string, why: string, safe: boolean) => ({
@@ -134,32 +175,56 @@ export const meetingsMount = () => {
     commands: (): Command[] => {
       const holder = new Command(IDENTITY.command)
       addMeetingCommands(holder, deps)
-      holder.commands
-        .find((group) => group.name() === "meetings")
-        ?.addCommand(
-          transcribeCommand({
-            store: () => need().store.meetings,
-            accountId: () => need().accountId,
-            api: () => need().api(),
-            env: () => need().env,
-            signal: () => (action ? environmentOf(action).signal : undefined),
-            progress: (line) => (action ? environmentOf(action).streams?.diagnostic(line) : undefined),
-            write: (report, command) => {
-              const resume = report.stopped
-                ? goOn(
-                    "meetings transcribe",
-                    "transcribe.continue",
-                    `${report.remaining} calls still have no transcript`,
-                    false,
-                  )
-                : {}
-              answers.push(() => renderAnswer(command, outputFor(command), itemOf(report, resume)))
-            },
-          }),
-        )
+      const meetings = holder.commands.find((group) => group.name() === "meetings")
+      if (meetings)
+        overrideSharedContract(meetings, "Beeline gives no summaries and no transcript files to import.", (group) => {
+          const mounted = group.commands as Command[]
+          for (const one of mounted.filter((leaf) => UNUSED.has(leaf.name()))) mounted.splice(mounted.indexOf(one), 1)
+        })
+      addMeetingSearchCommand(holder, {
+        search: async (query, request) => {
+          const { searchMeetingHits } = await import("@wirecat/cli-core/services")
+          const { store, accountId, indexes } = need()
+          return searchMeetingHits(store, query, { ...request, accountId }, { refreshIndex: indexes })
+        },
+        signal: () => (action ? environmentOf(action).signal : undefined),
+        output: (body) => {
+          const at = action
+          if (!at) throw new CliError("configuration_error", "no command is running")
+          answers.push(() => renderAnswer(at, outputFor(at), body as Parameters<typeof renderAnswer>[2]))
+        },
+      })
+      meetings?.addCommand(
+        transcribeCommand({
+          store: () => need().store.meetings,
+          accountId: () => need().accountId,
+          api: () => need().api(),
+          env: () => need().env,
+          signal: () => (action ? environmentOf(action).signal : undefined),
+          progress: (line) => (action ? environmentOf(action).streams?.diagnostic(line) : undefined),
+          write: (report, command) => {
+            const resume = report.stopped
+              ? goOn(
+                  "meetings transcribe",
+                  "transcribe.continue",
+                  `${report.remaining} calls still have no transcript`,
+                  false,
+                )
+              : {}
+            answers.push(() => renderAnswer(command, outputFor(command), itemOf(report, resume)))
+          },
+        }),
+      )
       for (const group of holder.commands) {
-        if (group.commands.length) annotate(group, { effects: NO_EFFECTS })
+        if (group.commands.length && !hasSharedContract(group)) annotate(group, { effects: NO_EFFECTS })
         for (const leaf of leaves(group)) {
+          acceptRef(leaf)
+          if (["meetings transcript", "meetings export"].includes(pathOf(leaf).join(" ")))
+            leaf.hook("preAction", async (one) => {
+              if (pathOf(one).join(" ") === "meetings export" && one.opts().format !== "vtt") return
+              const missing = await noTranscript(need().store.meetings, one.processedArgs[0] as number, need().profile)
+              if (missing) throw missing
+            })
           withExample(leaf)
           commands.add(leaf)
         }
@@ -187,8 +252,10 @@ export const meetingsMount = () => {
         import("../beeline.js"),
         import("../call-source.js"),
       ])
-      // A command whose only write is a file (`meetings export --output`) leaves the store as it was.
-      const reads = metaOf(at).effects?.local === "read" || (readsOverMcp(at) && !fetchesOnly(at))
+      // A command whose only write is a file (`meetings export --output`) leaves the store as it was. A search first
+      // brings the transcripts' word index up to date, which writes, so it opens the store for writing unless locked.
+      const indexes = pathOf(at).join(" ") === "search meetings" && readOnlyLockOf(IDENTITY, env) === undefined
+      const reads = !indexes && (metaOf(at).effects?.local === "read" || (readsOverMcp(at) && !fetchesOnly(at)))
       const { store, accountId } = await openProfileStore(env, profile, reads)
       let closed: Promise<void> | undefined
       const close = () => (closed ??= store.close())
@@ -206,6 +273,8 @@ export const meetingsMount = () => {
       opened = {
         store,
         accountId,
+        profile,
+        indexes,
         env,
         close,
         api: signedIn,

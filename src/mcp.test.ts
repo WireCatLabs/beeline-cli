@@ -21,7 +21,11 @@ it("serves search, read and write over every command but mcp, and runs a command
   }
 })
 
-it("pins the commands an agent can find, and never offers session start or end", async () => {
+// Only beeline's own groups: the commands cli-core mounts are cli-core's to pin, and pinning them here turns every
+// cli-core release into an adoption change.
+const OWN_GROUPS = ["session", "meetings", "events", "models", "search"]
+
+it("pins beeline's own commands an agent can find, and never offers a sign-in or account removal", async () => {
   const program = createProgram()
   const tools = toolsFromCommands(describeProgram(program), {
     includeUnavailable: true,
@@ -30,8 +34,12 @@ it("pins the commands an agent can find, and never offers session start or end",
     fetchOnly: readsOverMcpAt(program),
     permissions,
   })
-  const catalogue = Object.fromEntries(tools.map((tool) => [tool.command, tool.writes ? "write" : "read"]))
+  const catalogue = Object.fromEntries(
+    tools
+      .filter((tool) => OWN_GROUPS.includes(tool.command.split(" ")[0] ?? ""))
+      .map((tool) => [tool.command, tool.writes ? "write" : "read"]),
+  )
   await expect(`${JSON.stringify(catalogue, null, 2)}\n`).toMatchFileSnapshot("../contracts/mcp-catalogue.json")
-  expect(Object.keys(catalogue)).not.toContain("session start")
-  expect(Object.keys(catalogue)).not.toContain("session end")
+  const offered = tools.map((tool) => tool.command)
+  for (const never of ["session start", "session end", "account remove"]) expect(offered).not.toContain(never)
 })

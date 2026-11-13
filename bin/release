@@ -28,10 +28,6 @@ for arg; do
 done
 
 cd "$(dirname "$0")/.."
-if [ "$(node -p 'require("./package.json").private === true')" = true ]; then
-  echo "beeline is private and is not published to npm" >&2
-  exit 1
-fi
 self=$(git hash-object bin/release)
 # The fold and land() fast-forward main, and sh reads this file as it goes: a newer bin/release would run half old,
 # half new.
@@ -91,6 +87,13 @@ land() {
   git fetch -q origin
   [ "$(git rev-parse HEAD)" = "$(git rev-parse origin/main)" ] ||
     { echo "main advanced while $pr was being prepared — stop and review the current version before merging" >&2; exit 1; }
+  for _ in $(seq 180); do
+    state=$(gh pr view "$pr" --json mergeStateStatus -q .mergeStateStatus)
+    case "$state" in CLEAN|HAS_HOOKS|UNSTABLE) break ;; esac
+    [ "$(gh pr view "$pr" --json state -q .state)" = CLOSED ] && { echo "$pr was closed without merging" >&2; exit 1; }
+    sleep 10
+  done
+  case "$state" in CLEAN|HAS_HOOKS|UNSTABLE) ;; *) echo "$pr is $state after 30 minutes" >&2; exit 1 ;; esac
   gh pr merge "$pr" --squash --delete-branch --subject "$title (#${pr##*/})"
   git fetch -q origin
   git merge -q --ff-only origin/main

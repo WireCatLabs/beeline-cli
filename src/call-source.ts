@@ -13,12 +13,17 @@ export const OVERLAP_MS = 3 * 60 * 60 * 1000
 const managerName = ({ firstName, lastName }: CallRecord["abonent"]) =>
   [firstName, lastName].filter((part) => part?.trim()).join(" ") || null
 
+/** Direction, manager and client in one line, so a list, an export and a `title:` search show who spoke with whom. */
+export const callTitle = (record: CallRecord): string =>
+  `${record.direction === "INBOUND" ? "Входящий" : "Исходящий"} звонок · ${managerName(record.abonent) ?? "менеджер"} ↔ ` +
+  `+${record.phone.replace(/^\+/, "")}`
+
 const meetingOf = (record: CallRecord): SourceMeeting => ({
   series: null,
   occurrence: {
     id: record.id,
     seriesId: record.id,
-    title: null,
+    title: callTitle(record),
     startedAt: new Date(record.date).toISOString(),
     endedAt: new Date(record.date + record.duration).toISOString(),
   },

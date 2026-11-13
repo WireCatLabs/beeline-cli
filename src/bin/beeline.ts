@@ -2,15 +2,10 @@
 import { enableCompileCache } from "node:module"
 import { catchCrashes } from "@wirecat/cli-base"
 import { wcatStart } from "@wirecat/cli-base/wcat/start"
-import { IDENTITY } from "../identity.js"
+import { DESKTOP, IDENTITY } from "../identity.js"
 
 enableCompileCache()
-const wcat = await wcatStart({
-  command: IDENTITY.command,
-  version: IDENTITY.version,
-  description: IDENTITY.description,
-  docs: "https://github.com/WireCatLabs/beeline-cli#readme",
-})
+const wcat = await wcatStart(DESKTOP)
 if (wcat.code !== undefined) {
   process.exitCode = wcat.code
 } else {

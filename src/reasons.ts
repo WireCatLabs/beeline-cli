@@ -11,6 +11,8 @@ const OWN: [reason: string, code: string, message: string][] = [
   ["recording.too-large", "validation_error", "the recording is larger than 256 MB"],
   ["recording.not-stereo", "invalid_response", "the recording is not two separate channels"],
   ["model.not-downloaded", "not_found", "the speech model is not on this computer; download it first"],
+  ["transcript.missing", "not_found", "the call has no transcript yet; meetings transcribe makes one"],
+  ["transcript.too-short", "not_found", "the call is shorter than five seconds, so meetings transcribe skips it"],
 ]
 
 export const REASONS = defineReasons(

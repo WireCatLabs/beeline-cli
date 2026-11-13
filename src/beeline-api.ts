@@ -7,9 +7,17 @@ import {
   type SleepLike,
   wallClock,
 } from "@wirecat/cli-base"
-import { type FetchLike, providerWaitMs, readJsonResponse, retryableStatus, statusToCode } from "@wirecat/cli-base/http"
+import {
+  type FetchLike,
+  hostFetch,
+  providerWaitMs,
+  readJsonResponse,
+  retryableStatus,
+  statusToCode,
+} from "@wirecat/cli-base/http"
 import { providerRequest } from "@wirecat/cli-core/cli"
 import * as v from "valibot"
+import { DESKTOP } from "./identity.js"
 
 export const BASE_URL = "https://cloudpbx.beeline.ru/apis/portal/"
 
@@ -80,7 +88,7 @@ export interface RecordsQuery {
 export const beelineApi = (
   token: string,
   {
-    fetch = globalThis.fetch,
+    fetch,
     signal,
     wait = realSleep,
     random = Math.random,
@@ -93,6 +101,12 @@ export const beelineApi = (
     timeouts?: typeof TIMEOUTS
   } = {},
 ) => {
+  // Our own deadline per request fires first; hostFetch's is only the outer bound.
+  const send = hostFetch({
+    hosts: DESKTOP.hosts,
+    ...(fetch ? { fetch } : {}),
+    timeoutMs: 2 * Math.max(timeouts.listMs, timeouts.recordingMs),
+  })
   const once = async <T>(
     path: string,
     endpoint: string,
@@ -124,7 +138,7 @@ export const beelineApi = (
     let response: Response
     try {
       // A redirect would carry the token header to wherever it points.
-      response = await fetch(BASE_URL + path, {
+      response = await send(BASE_URL + path, {
         headers: { "X-MPBX-API-AUTH-TOKEN": token, Accept: accept },
         redirect: "error",
         signal: bounded,

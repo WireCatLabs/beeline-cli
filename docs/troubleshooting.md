@@ -7,7 +7,7 @@ support request.
 | --- | --- |
 | Not sure what is set up | Run `beeline doctor`. It reads no keyring and uses no network. |
 | `beeline` is not found | Open a new terminal, and check that npm's global folder is on `PATH`. |
-| "name a profile" | Put the profile first, as in `beeline personal config show`, or set `BEELINE_PROFILE`. |
+| "name a profile" | Put the profile first, as in `beeline work config show`, or set `BEELINE_PROFILE`. |
 | The settings file does not read | `doctor` lists every problem in the file under `config.issues`. Run the `config unset` each one gives, or fix the file by hand. |
 | `doctor` lists `files.problems` | Other users of the computer can read `config.json` or enter its folder. Run each `chmod` that `doctor` prints after "to make it private:". `doctor` never changes a file mode itself. |
 | A write is refused | The profile's permissions or `BEELINE_READ_ONLY` stop it; see [settings](configuration.md#permissions). |
