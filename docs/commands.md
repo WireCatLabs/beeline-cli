@@ -177,7 +177,7 @@ beeline meetings show <meeting> [options]
 | `--json` | one JSON value. |
 | `--jsonl` | one JSON object per item. |
 
-**Returns:** meeting details — ref, id, provider, account, title, url, started_at, ended_at, and 16 more; every field: beeline commands info meetings show
+**Returns:** meeting details — ref, id, provider, account, title, url, started_at, ended_at, and 17 more; every field: beeline commands info meetings show
 
 **Next usually:** `beeline meetings transcript <meeting>`, `beeline meetings export <meeting>`
 
