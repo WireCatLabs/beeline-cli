@@ -64,6 +64,8 @@ Notable changes to `@wirecat/beeline-cli`. One section per version, newest first
   (`BEELINE_WORK_FOLDER`) and is refused elsewhere with `read-only.output-outside`. From `@wirecat/cli-core` 0.643.0.
 - **A call's client is the identity `phone:+<number>`, with the `+`.** A store that holds calls synced before this
   version keeps their old client rows beside the new ones once a sync saves those calls again.
+- **Built on cli-core 0.656.0** (was 0.651.0). See the
+  [cli-core changelog](https://github.com/WireCatLabs/cli-core/blob/main/CHANGELOG.md).
 
 ### Fixed
 
@@ -121,6 +123,10 @@ Notable changes to `@wirecat/beeline-cli`. One section per version, newest first
 - **A call's client number is read as a Russian number.** Beeline gives the 10-digit national number, and the sync
   wrote it as `+9…`, so a call never linked to its CRM contact and its title showed the wrong number. It is now
   `+7…`; an extension or a foreign number keeps its digits as Beeline gave them.
+- **Sync runs on a fresh install.** A shared WireCat config (`~/.config/WireCat/config.json`) that could not be
+  read (a byte-order mark, broken JSON, a folder in its place, an older `setup` shape) made every WireCat tool
+  read-only and refused `sync`. Now only the owner's own "read only" answer limits a tool, and even then a sync runs:
+  it only reads the service into the local store (cli-core 0.656.0).
 
 ### Security
 
