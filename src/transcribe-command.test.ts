@@ -169,8 +169,10 @@ it("every command that takes a call takes the ref meetings list prints as well a
     expect(byRef.code, `${command}: ${byRef.err}`).toBe(0)
     expect(JSON.parse(byRef.out)).toEqual({ ...JSON.parse(byId.out), meta: expect.anything() })
   }
-  const wrong = await ran(["work", "meetings", "show", "call-7", "--json"])
+  const wrong = await ran(["work", "meetings", "transcript", "call-7", "--json"])
   expect(JSON.parse(wrong.err).error.message).toContain("meeting:1/375")
+  const unknown = await ran(["work", "meetings", "show", "call-7", "--json"])
+  expect(JSON.parse(unknown.err).error).toMatchObject({ code: "not_found" })
 })
 
 it("indexes what it transcribed, so a search that may not write finds it", async () => {

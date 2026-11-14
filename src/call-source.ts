@@ -77,7 +77,8 @@ const participantsOf = (record: CallRecord): SourceParticipant[] => {
  * Beeline call records as meetings for cli-core's `pull`. A record has no transcript, chat, summary or files of its
  * own: Beeline offers none through the API (its records section lists, downloads and deletes, nothing more).
  */
-export const callSource = (api: BeelineApi): MeetingSource => {
+// Signs in on the first fetch: `meetings list` and `show` hold the source but read only the store (no find or get).
+export const callSource = (api: () => BeelineApi): MeetingSource => {
   const seen = new Map<string, CallRecord>()
   return {
     provider: PROVIDER_NAME,
@@ -85,7 +86,7 @@ export const callSource = (api: BeelineApi): MeetingSource => {
     overlapMs: OVERLAP_MS,
     meetings: async (since) => {
       const meetings = new Map<string, SourceMeeting>()
-      for await (const record of api.allRecords({ from: new Date(since) })) {
+      for await (const record of api().allRecords({ from: new Date(since) })) {
         seen.set(record.id, record)
         meetings.set(record.id, meetingOf(record))
       }

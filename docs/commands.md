@@ -137,7 +137,7 @@ stored meetings and their records
 
 ### `beeline meetings list`
 
-stored meetings, newest first
+meetings, newest first: the service's and the stored ones, kept in the store
 
 ```sh
 beeline meetings list [query] [options]
@@ -151,10 +151,11 @@ beeline meetings list [query] [options]
 |---|---|
 | `--json` | one JSON value. |
 | `--jsonl` | one JSON object per item. |
+| `--backend <archive\|server\|both>` | where to read: the store (archive), the service (server), or both, kept in the store (default: both). |
 | `--limit <n>` | meetings per page. Default: `100`. |
 | `--page <n>` | page number. Default: `1`. |
 
-**Returns:** meeting — ref, id, provider, account, title, url, started_at, ended_at, and 8 more; every field: beeline commands info meetings list
+**Returns:** meeting — ref, id, provider_id, provider, account, title, url, started_at, and 11 more; every field: beeline commands info meetings list
 
 **Next usually:** `beeline meetings show <meeting>`, `beeline meetings transcript <meeting>`, `beeline meetings export <meeting>`
 
@@ -162,7 +163,7 @@ beeline meetings list [query] [options]
 
 ### `beeline meetings show`
 
-show a stored meeting
+show a meeting, read again from the service with its people, transcript and documents
 
 ```sh
 beeline meetings show <meeting> [options]
@@ -170,14 +171,15 @@ beeline meetings show <meeting> [options]
 
 | Argument | | What it is |
 |---|---|---|
-| `meeting` | required | stored call id, or the ref meetings list prints (meeting:1/375). |
+| `meeting` | required | the stored meeting's number, its meeting: ref, or the service's id (provider_id). |
 
 | Option | What it does |
 |---|---|
 | `--json` | one JSON value. |
 | `--jsonl` | one JSON object per item. |
+| `--backend <archive\|server\|both>` | where to read: the store (archive), the service (server), or both, kept in the store (default: both). |
 
-**Returns:** meeting details — ref, id, provider, account, title, url, started_at, ended_at, and 17 more; every field: beeline commands info meetings show
+**Returns:** meeting details — ref, id, provider_id, provider, account, title, url, started_at, and 20 more; every field: beeline commands info meetings show
 
 **Next usually:** `beeline meetings transcript <meeting>`, `beeline meetings export <meeting>`
 
@@ -373,7 +375,7 @@ beeline search meetings <query> [options]
 | `--project <project>` | meetings confirmed in this project, by name, key or alias. |
 | `--tag <name>` | meetings with this tag, by name or alias. |
 | `--topic-name <name>` | meetings with this topic, by name or alias. |
-| `--since-time <time>` | meetings starting at or after this ISO 8601 date or time. |
+| `--since-time <time>` | meetings starting at or after this ISO 8601 date or time, or 30m, 2h, 7d ago. |
 | `--until-time <time>` | meetings starting at or before this ISO 8601 date or time; a date alone covers that whole local day. |
 | `--limit <n>` | how many hits, 1 through 1000 (default 100). |
 | `--cursor <cursor>` | continue from the previous page's page.next_cursor, with the same query and filters. |
