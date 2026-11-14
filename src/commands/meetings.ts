@@ -83,7 +83,8 @@ const meetingId = (text: string): number => {
   }
 }
 
-const TAKES_A_MEETING = ["meetings show", "meetings transcript", "meetings export"]
+// cli-core's own `meetings show` reads the id, the ref and the service's id (0.660.0).
+const TAKES_A_MEETING = ["meetings transcript", "meetings export"]
 const UNUSED = new Set(["summary", "import"])
 
 const acceptRef = (leaf: CommandType) => {
@@ -278,7 +279,7 @@ export const meetingsMount = () => {
         env,
         close,
         api: signedIn,
-        source: () => (source ??= callSource(signedIn())),
+        source: () => (source ??= callSource(signedIn)),
       }
     },
   }

@@ -7,7 +7,7 @@ ran it · ⛔ not tested offline, with the reason and where it is checked instea
 Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 [TESTING.md](TESTING.md) for how, and for the states and failures that cut across commands.
 
-**82 ✅ · 70 ⛔ · 0 ❌** — 45 commands, 107 options.
+**82 ✅ · 72 ⛔ · 0 ❌** — 45 commands, 109 options.
 
 | Command | Option | | Note |
 |---|---|---|---|
@@ -26,11 +26,13 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | `meetings list` |  | ✅ |  |
 | `meetings list` | `--json` | ✅ |  |
 | `meetings list` | `--jsonl` | ⛔ | cli-core's shared meetings command, tested in cli-core's src/meetings/cli; beeline supplies only the store and the call source (src/calls.test.ts) |
+| `meetings list` | `--backend` | ⛔ | cli-core 0.660.0 src/store/meetings-read-through.test.ts drives archive, server and both on a shared source |
 | `meetings list` | `--limit` | ✅ |  |
 | `meetings list` | `--page` | ⛔ | cli-core's shared meetings command, tested in cli-core's src/meetings/cli; beeline supplies only the store and the call source (src/calls.test.ts) |
 | `meetings show` |  | ✅ |  |
 | `meetings show` | `--json` | ✅ |  |
 | `meetings show` | `--jsonl` | ⛔ | cli-core's shared meetings command, tested in cli-core's src/meetings/cli; beeline supplies only the store and the call source (src/calls.test.ts) |
+| `meetings show` | `--backend` | ⛔ | cli-core 0.660.0 src/store/meetings-read-through.test.ts drives archive, server and both on a shared source |
 | `meetings transcript` |  | ✅ |  |
 | `meetings transcript` | `--history` | ⛔ | cli-core's shared meetings command, tested in cli-core's src/meetings/cli; beeline supplies only the store and the call source (src/calls.test.ts) |
 | `meetings transcript` | `--json` | ✅ |  |

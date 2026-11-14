@@ -6,6 +6,7 @@ import { record } from "./testing/records.js"
 describe("sync runs right after install, whatever the shared WireCat config holds", () => {
   for (const one of syncAfterInstallCases({
     sync: ["work", "meetings", "sync", "--since-time", "2026-10-01T00:00:00Z"],
+    profileLevels: { variable: "BEELINE_CONFIG_DIR", keys: ["meetings"] },
     run: async (argv, env) => {
       const err: string[] = []
       const code = await run(argv, {
