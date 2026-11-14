@@ -149,17 +149,15 @@ beeline meetings list [query] [options]
 
 | Option | What it does |
 |---|---|
-| `--json` | one JSON value. |
-| `--jsonl` | one JSON object per item. |
 | `--backend <archive\|server\|both>` | where to read: the store (archive), the service (server), or both, kept in the store (default: both). |
-| `--limit <n>` | meetings per page. Default: `100`. |
-| `--page <n>` | page number. Default: `1`. |
+| `--limit <n>` | meetings per page; the profile's defaults.limit when absent. |
+| `--page <n>` | which page, starting at 1. |
 
 **Returns:** meeting — ref, id, provider_id, provider, account, title, url, started_at, and 11 more; every field: beeline commands info meetings list
 
 **Next usually:** `beeline meetings show <meeting>`, `beeline meetings transcript <meeting>`, `beeline meetings export <meeting>`
 
-**Example:** `beeline work meetings list --limit 20 --json`
+**Example:** `beeline work meetings list --limit 50 --json`
 
 ### `beeline meetings show`
 
@@ -175,8 +173,6 @@ beeline meetings show <meeting> [options]
 
 | Option | What it does |
 |---|---|
-| `--json` | one JSON value. |
-| `--jsonl` | one JSON object per item. |
 | `--backend <archive\|server\|both>` | where to read: the store (archive), the service (server), or both, kept in the store (default: both). |
 
 **Returns:** meeting details — ref, id, provider_id, provider, account, title, url, started_at, and 20 more; every field: beeline commands info meetings show
@@ -200,8 +196,6 @@ beeline meetings transcript <meeting> [options]
 | Option | What it does |
 |---|---|
 | `--history` | include superseded transcript versions. |
-| `--json` | one JSON value. |
-| `--jsonl` | one JSON object per item. |
 
 **Returns:** meeting transcript — ref, meeting, source, language, superseded_at, created_at, lines; every field: beeline commands info meetings transcript
 
@@ -226,8 +220,6 @@ beeline meetings export <meeting> [options]
 | `--format <format>` | export format. One of: `markdown`, `vtt`. Default: `markdown`. |
 | `--transcript-id <id>` | export a specific transcript version. |
 | `--output <file>` | write content to a new file through the host's writer. |
-| `--json` | one JSON value. |
-| `--jsonl` | one JSON object per item. |
 
 **Returns:** meeting export — meeting_id, format, filename, content, output; every field: beeline commands info meetings export
 
@@ -247,8 +239,6 @@ beeline meetings people <query> [options]
 
 | Option | What it does |
 |---|---|
-| `--json` | one JSON value. |
-| `--jsonl` | one JSON object per item. |
 | `--limit <n>` | most matching observations per page, 1–1000 (default 50). |
 | `--scan-limit <n>` | most participant observations to inspect, 1–10000 (default 1000). |
 | `--max-read-bytes <bytes>` | most stored name and email bytes to read (default 1048576). |
@@ -270,9 +260,7 @@ beeline meetings sync [options]
 
 | Option | What it does |
 |---|---|
-| `--json` | one JSON value. |
-| `--jsonl` | one JSON object per item. |
-| `--since-time <time>` | fetch meetings starting at or after this ISO 8601 date or time. |
+| `--since-time <time>` | fetch meetings starting at or after this ISO 8601 date or time, or 30m, 2h, 7d ago. |
 | `--lookback-days <days>` | revisit recent occurrences for late transcripts (0–31). |
 | `--rescan` | read the last 30 days again, not only what came after the last sync. |
 
@@ -292,8 +280,6 @@ beeline meetings repair [options]
 
 | Option | What it does |
 |---|---|
-| `--json` | one JSON value. |
-| `--jsonl` | one JSON object per item. |
 | `--yes` | store the detected languages; otherwise only preview. |
 
 **Returns:** meeting repair — account_id, applied, transcripts, languages; every field: beeline commands info meetings repair
@@ -333,17 +319,12 @@ the owner's stored events
 list stored events
 
 ```sh
-beeline events list [query] [options]
+beeline events list [query]
 ```
 
 | Argument | | What it is |
 |---|---|---|
 | `query` | optional | event id, origin or time fields that narrow the list. |
-
-| Option | What it does |
-|---|---|
-| `--json` | one JSON value. |
-| `--jsonl` | one JSON object per item. |
 
 **Returns:** event — id, event_series_id, title, description, location, starts_at, ends_at, timezone, and 13 more; every field: beeline commands info events list
 
@@ -377,7 +358,7 @@ beeline search meetings <query> [options]
 | `--topic-name <name>` | meetings with this topic, by name or alias. |
 | `--since-time <time>` | meetings starting at or after this ISO 8601 date or time, or 30m, 2h, 7d ago. |
 | `--until-time <time>` | meetings starting at or before this ISO 8601 date or time; a date alone covers that whole local day. |
-| `--limit <n>` | how many hits, 1 through 1000 (default 100). |
+| `--limit <n>` | how many hits, 1 through 1000; the profile's defaults.limit when absent. |
 | `--cursor <cursor>` | continue from the previous page's page.next_cursor, with the same query and filters. |
 | `--max-read-bytes <bytes>` | most stored bytes to read, 1 through 67108864 (default 4194304). |
 
@@ -795,8 +776,8 @@ beeline runs list [query] [options]
 
 | Option | What it does |
 |---|---|
-| `--limit <n>` | how many to show. Default: `20`. |
-| `--page <n>` | which page, starting at 1. Default: `1`. |
+| `--limit <n>` | how many to show. |
+| `--page <n>` | which page, starting at 1. |
 
 **Returns:** run — run_id, command, started_at, status, cli_version, profile, completed_at, requests, and 23 more; every field: beeline commands info runs list
 

@@ -12,6 +12,7 @@ import {
   outputFor,
   overrideSharedContract,
   ProfileTokenStore,
+  pagingOf,
   type RunOptions,
   readOnlyLockOf,
   readsOverMcp,
@@ -48,9 +49,10 @@ const pathOf = (command: Command): string[] =>
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === "object" && value !== null && !Array.isArray(value)
 const LIST_KEYS = new Set(["items", "page", "limit", "hasMore", "meta"])
+const ITEM_KEYS = new Set(["item", "missing", "meta"])
 
 const EXAMPLES: Record<string, string> = {
-  "meetings list": "--limit 20",
+  "meetings list": "--limit 50",
   "meetings show": "1",
   "meetings transcript": "1",
   "meetings export": "1 --format markdown",
@@ -138,6 +140,12 @@ const bodyOf = (command: Command, value: unknown) => {
       snakeKeys(value),
       goOn("meetings sync", "sync.continue", `${value.remaining} calls were not reached before the run stopped`, true),
     )
+  // cli-core's `meetings show` answers `{ item, missing?, meta? }` already; wrapped again it printed `item.item`.
+  if (isRecord(value) && isRecord(value.item) && Object.keys(value).every((key) => ITEM_KEYS.has(key)))
+    return itemOf(snakeKeys(value.item), {
+      ...(Array.isArray(value.missing) ? { missing: value.missing } : {}),
+      ...(isRecord(value.meta) ? { meta: value.meta } : {}),
+    })
   return itemOf(snakeKeys(value))
 }
 
@@ -165,6 +173,7 @@ export const meetingsMount = () => {
     newFileOutput: writesNewFileOnlyWith,
     writeFile: writeNewFile,
     budgetOf: runBudgetOf,
+    pagingOf,
     write: (value) => {
       const at = action
       if (!at) throw new CliError("configuration_error", "no command is running")
@@ -189,6 +198,7 @@ export const meetingsMount = () => {
           return searchMeetingHits(store, query, { ...request, accountId }, { refreshIndex: indexes })
         },
         signal: () => (action ? environmentOf(action).signal : undefined),
+        pagingOf,
         output: (body) => {
           const at = action
           if (!at) throw new CliError("configuration_error", "no command is running")
