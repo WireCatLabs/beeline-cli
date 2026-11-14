@@ -6,3 +6,7 @@
   unless set, not 100. `runs list` reads it too.
 - **Every time flag takes one grammar** (cli-base 0.100.0, was 0.99.0): ISO with or without seconds and zone, a date
   alone, `today`, `yesterday`, or `30m`, `2h`, `7d` ago. `meetings sync --since-time 2h` now works.
+
+### Fixed
+
+- **`meetings show --json` answers `item`, not `item.item`,** with the store's `missing` line beside it.

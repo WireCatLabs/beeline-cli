@@ -409,7 +409,8 @@ const clientOf = async (number: string) => {
   const call = listed.find((one) => one.title.endsWith(number))
   const shown = await ran(["work", "meetings", "show", String(call?.id), "--json"])
   expect(shown.code, shown.err).toBe(0)
-  const { participants } = JSON.parse(shown.out).item.item as { participants: { role: string; person: unknown }[] }
+  expect(JSON.parse(shown.out)).toMatchObject({ missing: [{ field: "server" }], meta: { run_id: expect.any(String) } })
+  const { participants } = JSON.parse(shown.out).item as { participants: { role: string; person: unknown }[] }
   return participants.find((one) => one.role === "client")
 }
 
@@ -449,4 +450,14 @@ it("reads Beeline's 10-digit national number as Russian and leaves an extension 
     expect(clientPhone(raw)).toBe("+79000000001")
   expect(clientPhone("4950000001")).toBe("+74950000001")
   for (const raw of ["1234", "0000000000", "375000000000000"]) expect(clientPhone(raw)).toBeUndefined()
+})
+
+it("a bare meetings list pages by the profile's configured limit, not a number of its own", async () => {
+  process.env.BEELINE_TOKEN = "test-token"
+  beeline(() => Response.json([record(1), record(2), record(3)]))
+  expect((await ran(["paged", "meetings", "sync", "--since-time", "2026-10-01T00:00:00Z", "--json"])).code).toBe(0)
+  expect((await ran(["paged", "config", "set", "limit", "2", "--json"])).code).toBe(0)
+  const listed = await ran(["paged", "meetings", "list", "--json"])
+  expect(listed.code, listed.err).toBe(0)
+  expect(JSON.parse(listed.out)).toMatchObject({ items: [{}, {}], page: { limit: 2, has_more: true } })
 })
