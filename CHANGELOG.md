@@ -66,6 +66,21 @@ Notable changes to `@wirecat/beeline-cli`. One section per version, newest first
   version keeps their old client rows beside the new ones once a sync saves those calls again.
 - **Built on cli-core 0.656.0** (was 0.651.0). See the
   [cli-core changelog](https://github.com/WireCatLabs/cli-core/blob/main/CHANGELOG.md).
+- **A `readonly` level no longer stops `meetings sync`** (cli-core 0.662.0, was 0.656.0). A command that only fetches
+  call records into the local store runs at `readonly`; `deny` still refuses it. Commands that write the owner's
+  files or call another service stay blocked by `readonly`.
+- **`meetings list` and `meetings show` take `--backend archive|server|both`** (cli-core 0.660.0). beeline does not
+  search Beeline from these commands, so both answer from the store. `meetings show` takes the call id, its
+  `meeting:` ref or Beeline's own id, and an id it does not know is `not_found`.
+- **A shared config with a small slip is mended when it is read** (cli-core 0.659.0).
+  `~/.config/WireCat/config.json` with a byte-order mark, a comment, a trailing comma or a missing comma
+  between two lines is fixed in place, the old file kept beside it as `config.json.bak-<time>`.
+- **`meetings` and `events` commands take the program's `--json [fields]` and `--jsonl`** (cli-core 0.663.0, was
+  0.662.0), not their own on/off flags, so `meetings list --json id,title` keeps those fields.
+- **`meetings list`, `events list` and `search meetings` without `--limit` show the profile's `defaults.limit`**, 20
+  unless set, not 100. `runs list` reads it too.
+- **Every time flag takes one grammar** (cli-base 0.100.0, was 0.99.0): ISO with or without seconds and zone, a date
+  alone, `today`, `yesterday`, or `30m`, `2h`, `7d` ago. `meetings sync --since-time 2h` now works.
 
 ### Fixed
 
@@ -127,6 +142,9 @@ Notable changes to `@wirecat/beeline-cli`. One section per version, newest first
   read (a byte-order mark, broken JSON, a folder in its place, an older `setup` shape) made every WireCat tool
   read-only and refused `sync`. Now only the owner's own "read only" answer limits a tool, and even then a sync runs:
   it only reads the service into the local store (cli-core 0.656.0).
+- **`meetings list` and `meetings show` read the store without a sign-in.** They sign in only when a command fetches
+  from Beeline, so a profile that never signed in lists an empty store, as before.
+- **`meetings show --json` answers `item`, not `item.item`,** with the store's `missing` line beside it.
 
 ### Security
 
