@@ -12,6 +12,7 @@ import {
   outputFor,
   overrideSharedContract,
   ProfileTokenStore,
+  pagingOf,
   type RunOptions,
   readOnlyLockOf,
   readsOverMcp,
@@ -50,7 +51,7 @@ const isRecord = (value: unknown): value is Record<string, unknown> =>
 const LIST_KEYS = new Set(["items", "page", "limit", "hasMore", "meta"])
 
 const EXAMPLES: Record<string, string> = {
-  "meetings list": "--limit 20",
+  "meetings list": "--limit 50",
   "meetings show": "1",
   "meetings transcript": "1",
   "meetings export": "1 --format markdown",
@@ -165,6 +166,7 @@ export const meetingsMount = () => {
     newFileOutput: writesNewFileOnlyWith,
     writeFile: writeNewFile,
     budgetOf: runBudgetOf,
+    pagingOf,
     write: (value) => {
       const at = action
       if (!at) throw new CliError("configuration_error", "no command is running")
@@ -189,6 +191,7 @@ export const meetingsMount = () => {
           return searchMeetingHits(store, query, { ...request, accountId }, { refreshIndex: indexes })
         },
         signal: () => (action ? environmentOf(action).signal : undefined),
+        pagingOf,
         output: (body) => {
           const at = action
           if (!at) throw new CliError("configuration_error", "no command is running")

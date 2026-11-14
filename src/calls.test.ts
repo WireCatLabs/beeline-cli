@@ -46,6 +46,7 @@ it("syncs Beeline's call records into the store as meetings with a manager and a
   const listed = await ran(["work", "meetings", "list", "--json"])
   expect(listed.code, listed.err).toBe(0)
   expect(JSON.parse(listed.out).items).toHaveLength(3)
+  expect(JSON.parse(listed.out).page).toMatchObject({ limit: 20 })
   expect(JSON.parse(listed.out).items.map((one: { title: string }) => one.title)).toContain(
     "Входящий звонок · Test Manager ↔ +79000000000",
   )
