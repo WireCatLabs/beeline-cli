@@ -19,5 +19,12 @@
     "target": "entity meeting_participants",
     "reason": "cli-core 0.650.0 names each participant's person in meetings people; the published zm is older, and the entry goes once it publishes on 0.650.0+.",
     "review_after": "2026-11-27"
+  },
+  {
+    "group": "shared-roots",
+    "rule": "same-entity-schema",
+    "target": "entity meeting_hit",
+    "reason": "cli-core 0.664.0 adds by, score and passage to a meeting search hit (search by meaning); beeline and the published zm are on 0.663.0, and the entry goes once both build on 0.664.0+.",
+    "review_after": "2026-11-27"
   }
 ]
