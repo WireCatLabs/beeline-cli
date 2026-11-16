@@ -67,7 +67,8 @@ Owner, 2026-11-13 (NEED-2600 A). The client participant carries its number as `p
 `phone:<E.164>`. Beeline gives the client's 10-digit national number (`9XXXXXXXXX`, counted in the owner's store on
 2026-11-13), so `clientPhone` in `src/call-source.ts` reads it in Russia's plan: `e164Of` leaves a national number's
 country to the source, and Beeline is a Russian PBX. A number that plan does not read (an extension, a foreign number)
-keeps its raw digits in the id and gets no phone.
+gets no phone, and its identity is `number:<raw>`, the key cli-core's call reader expects for a number that is no phone
+number (owner, 2026-11-16, NEED-2620 A). Up to 0.2.0 it was `phone:<raw>`; `meetings sync` moves those ids too.
 
 A store written by an unpublished build before this fix has `phone:<national>` ids, and a build of one day
 `phone:+<national>` ones (the owner's: 1626 old ids on 2026-11-13). Each `meetings sync` first moves them to the id
@@ -77,5 +78,13 @@ to the CRM contact that holds the same number: at once for a mobile only the two
 landline, which everyone in an office shares. It joins only when the identity is exactly `phone:<E.164>`, so the `+`
 must be there. The manager is keyed by Beeline's `abonent` and gets no phone: an extension is the company's, not a
 person's. `src/calls.test.ts` checks both cases against a Bitrix24 contact.
+
+## A transcribed call's recording stays on this computer
+
+Owner, 2026-11-16 ("1 A, но можно отменить в настройках"). `meetings transcribe` keeps each recording it
+transcribed in beeline's state folder (cli-base's `resolvePaths`, `recordings/<profile>/<call id>.mp3`, the folder
+`0700`, the file `0600`) and saves it as the call's `recording` attachment with its `local_path`, which `meetings
+show` prints (cli-core 0.668.0). WireCat Desktop plays a call only from that path, as it does pbx's. The profile
+setting `keep_recordings` (default `true`) turns it off; then a recording is dropped once transcribed, as before.
 
 ## Open questions for the owner

@@ -1,0 +1,325 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+# The owner's release of beeline, start to end, from the main checkout:
+#
+#   bin/owner-release <profile>
+#
+# 1. Checks that main is clean, fetches it and fast-forwards it to origin/main, and that the released WireCat Desktop
+#    reads this manifest.
+# 2. Installs the locked dependencies.
+# 3. When npm already has the version in package.json, raises it: collects changes/ and `## Unreleased` into a dated
+#    section, and picks the level its headings need (scripts/version-level.ts). A version raised and dated by hand is
+#    released as it is.
+# 4. Builds, and runs the read-only live check of Beeline on <profile> with that build: a throwaway HOME, XDG folders
+#    and store, no D-Bus, so the owner's real store and keyring stay untouched. It syncs a week of calls, lists three,
+#    transcribes one and checks its recording is kept (mode 0600). It prints counts and field names only.
+# 5. Records the check in docs/dev/live-checks.txt, which bin/release reads.
+# 6. Opens the release pull request with the version and the record in it, waits for its checks and squash merges it.
+#    The record rides in the release commit, so no second pull request is needed.
+# 7. Runs bin/release --local, which checks again and publishes from this computer.
+#
+# The Beeline token is BEELINE_TOKEN when it is set, else the keyring entry `session start` keeps (service
+# beeline-cli, username token:<profile>). It reaches only the beeline runs, through their environment; it is never
+# printed. For the npm token, bin/release reads NPM_TOKEN, or the keyring when NPM_KEYRING_ACCOUNT names its account,
+# or your npm login.
+
+require "fileutils"
+require "json"
+require "open3"
+require "tmpdir"
+
+ROOT = File.expand_path("..", __dir__)
+CLI = File.join(ROOT, "dist/bin/beeline.js")
+PACKAGE_JSON = File.join(ROOT, "package.json")
+CHANGELOG = File.join(ROOT, "CHANGELOG.md")
+CHANGES = File.join(ROOT, "changes")
+LIVE_CHECKS = File.join(ROOT, "docs/dev/live-checks.txt")
+VERSION_LEVEL = File.join(ROOT, "scripts/version-level.ts")
+FRAGMENTS = File.join(ROOT, "scripts/changelog-fragments.ts")
+DOCS_RULES = File.join(ROOT, "scripts/docs-rules.ts")
+RELEASE = File.join(ROOT, "bin/release")
+MODELS = File.join(ENV.fetch("XDG_DATA_HOME", File.join(Dir.home, ".local/share")), "WireCat/models/audio")
+
+PACKAGE = "@wirecat/beeline-cli"
+MODEL = "gigaam-v3"
+# The name the record carries: bin/release checks the record, not who wrote it.
+RECORDED_SCRIPT = "bin/owner-release"
+KEYRING_SERVICE = "beeline-cli"
+# The manifest declares `meetings` since 0.3.0, which Desktop 0.6.8 refuses: publish only once Desktop reads it.
+DESKTOP_REPO = "WireCatLabs/wirecat-desktop"
+DESKTOP_NEEDED = "0.6.9"
+
+def step(title)
+  puts "\n== #{title}"
+end
+
+def run!(*argv)
+  puts "$ #{argv.join(' ')}"
+  system(*argv, chdir: ROOT) or abort "failed: #{argv.join(' ')}"
+end
+
+def output!(*argv)
+  out, status = Open3.capture2(*argv, chdir: ROOT)
+  abort "failed: #{argv.join(' ')}" unless status.success?
+  out.strip
+end
+
+def published?(version)
+  _, status = Open3.capture2("npm", "view", "#{PACKAGE}@#{version}", "version", "--prefer-online", err: File::NULL)
+  status.success?
+end
+
+def package_version
+  JSON.parse(File.read(PACKAGE_JSON)).fetch("version")
+end
+
+def sync_main
+  step "main is clean and at origin/main"
+  abort "run from the main branch" unless output!("git", "branch", "--show-current") == "main"
+  abort "main has uncommitted changes" unless output!("git", "status", "--porcelain", "--untracked-files=no").empty?
+  run! "git", "fetch", "--tags", "origin"
+  run! "git", "merge", "--ff-only", "origin/main"
+  output!("git", "rev-parse", "HEAD")
+end
+
+def desktop_reads_the_manifest
+  step "WireCat Desktop #{DESKTOP_NEEDED} or newer is released"
+  latest = output!("gh", "api", "repos/#{DESKTOP_REPO}/releases/latest", "--jq", ".tag_name").delete_prefix("v")
+  puts "latest Desktop: #{latest}"
+  return if Gem::Version.new(latest) >= Gem::Version.new(DESKTOP_NEEDED)
+
+  abort "Desktop #{latest} refuses this manifest; release Desktop #{DESKTOP_NEEDED} first"
+end
+
+def unreleased_text(changelog)
+  changelog[/^## Unreleased\n(.*?)(?=^## )/m, 1].to_s.strip
+end
+
+def fragment_files
+  Dir[File.join(CHANGES, "*.md")].reject { |path| File.basename(path) == "README.md" }
+end
+
+# The next free patch above npm's latest; scripts/version-level.ts then raises it to the level the headings need.
+def next_patch
+  taken = JSON.parse(output!("npm", "view", PACKAGE, "versions", "--json", "--prefer-online"))
+  major, minor, patch = output!("npm", "view", PACKAGE, "version", "--prefer-online").split(".").map(&:to_i)
+  patch += 1 while taken.include?("#{major}.#{minor}.#{patch + 1}")
+  ["#{major}.#{minor}.#{patch + 1}", taken]
+end
+
+def replace_once!(path, from, to)
+  text = File.read(path)
+  abort "#{path} has no #{from.inspect}" unless text.scan(from).length == 1
+  File.write(path, text.sub(from, to))
+end
+
+def raise_version(current)
+  changelog = File.read(CHANGELOG)
+  if fragment_files.empty? && unreleased_text(changelog).empty?
+    abort "#{current} is on npm and nothing was merged for a new version: no changes/ fragment, no ## Unreleased entry"
+  end
+
+  first, taken = next_patch
+  date = Time.now.strftime("%d.%m.%Y")
+  step "dating the changelog section as #{first}"
+  if changelog.match?(/^## Unreleased$/)
+    replace_once!(CHANGELOG, "\n## Unreleased\n", "\n## #{first} — #{date}\n")
+  else
+    File.write(CHANGELOG, changelog.sub(/^## /, "## #{first} — #{date}\n\n## "))
+  end
+  run! "node", "--experimental-strip-types", FRAGMENTS, "--rules", DOCS_RULES, first
+
+  version = output!("node", "--experimental-strip-types", VERSION_LEVEL, "--next", first)
+  abort "#{version} is already on npm" if taken.include?(version)
+  replace_once!(CHANGELOG, "\n## #{first} — ", "\n## #{version} — ") unless version == first
+  step "raising package.json from #{current} to #{version}"
+  replace_once!(PACKAGE_JSON, %("version": "#{current}"), %("version": "#{version}"))
+  run! "pnpm", "version:sync"
+  version
+end
+
+def dated?(version)
+  File.read(CHANGELOG)[/^## .*$/] =~ /\A## #{Regexp.escape(version)} — \d\d\.\d\d\.\d{4}\z/
+end
+
+def beeline(env, profile, *args)
+  out, err, status = Open3.capture3(env, "node", CLI, profile, *args, "--json", chdir: env.fetch("HOME"))
+  return JSON.parse(out) if status.success?
+
+  # The error's code and reason only: its message may quote a call record.
+  error = (JSON.parse(err)["error"] rescue nil) || {}
+  puts "!! #{args.join(' ')} failed (exit #{status.exitstatus}): #{error['code']} #{error['reason']}".rstrip
+  nil
+end
+
+def beeline_token(profile)
+  token = ENV["BEELINE_TOKEN"].to_s
+  if token.empty?
+    token, = Open3.capture2("secret-tool", "lookup", "service", KEYRING_SERVICE, "username", "token:#{profile}",
+                            err: File::NULL)
+  end
+  token = token.chomp
+  abort "no token for profile #{profile} in the keyring; a token kept in a file is not read here: export BEELINE_TOKEN" if token.empty?
+  token
+end
+
+def live_check(profile)
+  token = beeline_token(profile)
+  failed = false
+  Dir.mktmpdir("beeline-live-") do |sandbox|
+    env = {
+      "HOME" => sandbox,
+      "XDG_CONFIG_HOME" => File.join(sandbox, "config"),
+      "XDG_DATA_HOME" => File.join(sandbox, "data"),
+      "XDG_STATE_HOME" => File.join(sandbox, "state"),
+      "XDG_CACHE_HOME" => File.join(sandbox, "cache"),
+      "MESSAGING_STORE" => File.join(sandbox, "wirecat.db"),
+      "DBUS_SESSION_BUS_ADDRESS" => "disabled:",
+      "BEELINE_NO_UPDATE_CHECK" => "1",
+      "BEELINE_TOKEN" => token,
+    }
+
+    step "beeline #{profile} session status --check"
+    answer = beeline(env, profile, "session", "status", "--check")
+    answer ? puts("signed in") : failed = true
+
+    since = (Time.now.utc - 7 * 86_400).strftime("%Y-%m-%dT00:00:00Z")
+    step "beeline #{profile} meetings sync --since-time #{since}"
+    answer = beeline(env, profile, "meetings", "sync", "--since-time", since)
+    if answer
+      item = answer.fetch("item", {})
+      puts "#{item['meetings']} meeting(s), #{item['participants']} participant(s), " \
+           "#{(item['warnings'] || []).length} warning(s)"
+    else
+      failed = true
+    end
+
+    step "beeline #{profile} meetings list --limit 3"
+    answer = beeline(env, profile, "meetings", "list", "--limit", "3")
+    if answer
+      items = answer.fetch("items", [])
+      puts "#{items.length} item(s); fields: #{(items.first || {}).keys.join(', ')}"
+    else
+      failed = true
+    end
+
+    step "beeline #{profile} meetings transcribe --max-meetings 1"
+    if Dir.exist?(File.join(MODELS, MODEL))
+      # The owner's downloaded model, linked for reading: a fresh download per check would take minutes.
+      FileUtils.mkdir_p(File.join(sandbox, "data/WireCat/models"))
+      File.symlink(MODELS, File.join(sandbox, "data/WireCat/models/audio"))
+      answer = beeline(env, profile, "meetings", "transcribe", "--max-meetings", "1")
+      item = answer ? answer.fetch("item", {}) : {}
+      errors = (item["failed"] || []).map { |one| one["reason"] }
+      puts "#{item['transcribed'].to_i} transcribed, #{item['audio_seconds'].to_i} s of audio, " \
+           "#{item['remaining'].to_i} remaining, failed: #{errors.empty? ? 'none' : errors.join(', ')}"
+      failed = true unless answer && item["transcribed"].to_i >= 1 && errors.empty?
+
+      step "the transcribed call's recording is kept on this computer, for the owner only"
+      kept = Dir.glob(File.join(sandbox, "**/recordings", profile, "*.mp3"))
+      private = kept.count { |path| (File.stat(path).mode & 0o777) == 0o600 }
+      puts "#{kept.length} recording(s) kept, #{private} of them readable by the owner only"
+      failed = true unless kept.length >= 1 && private == kept.length
+    else
+      puts "!! no #{MODEL} in #{MODELS}: run `beeline models download #{MODEL}` once"
+      failed = true
+    end
+  end
+  !failed
+end
+
+def release_body(version, record)
+  <<~BODY
+    Prepared by `bin/owner-release`: the version, its changelog section, and the live check of this commit's code.
+
+    ## Conformance
+
+    - **Live check** (read-only, `bin/owner-release`, throwaway store): `#{record}`
+    - **`pnpm release:check`** runs in `bin/release --local` on main before #{version} is published; this pull
+      request's own checks run the CI validation.
+    - **Fresh audit and slice reviews:** in the pull requests merged since the last release.
+  BODY
+end
+
+def merge(pr, base)
+  step "waiting for the checks of #{pr}"
+  30.times do
+    # gh exits non-zero until the checks register.
+    count, status = Open3.capture2("gh", "pr", "checks", pr, "--required", "--json", "name", "--jq", "length",
+                                   chdir: ROOT, err: File::NULL)
+    break if status.success? && count.to_i.positive?
+
+    sleep 2
+  end
+  run! "gh", "pr", "checks", pr, "--watch", "--required", "--fail-fast"
+  run! "git", "fetch", "origin"
+  if output!("git", "rev-parse", "origin/main") != base
+    abort "main advanced while #{pr} was checked; review the version against it, then merge #{pr} and run bin/release --local"
+  end
+  state = nil
+  180.times do
+    state = output!("gh", "pr", "view", pr, "--json", "mergeStateStatus", "--jq", ".mergeStateStatus")
+    break if %w[CLEAN HAS_HOOKS UNSTABLE].include?(state)
+
+    sleep 10
+  end
+  abort "#{pr} is #{state} after 30 minutes" unless %w[CLEAN HAS_HOOKS UNSTABLE].include?(state)
+  run! "gh", "pr", "merge", pr, "--squash", "--delete-branch", "--subject", "chore(release): #{version_of(pr)} (##{pr[/\d+\z/]})"
+  run! "git", "fetch", "origin"
+  run! "git", "merge", "--ff-only", "origin/main"
+end
+
+def version_of(pr)
+  output!("gh", "pr", "view", pr, "--json", "title", "--jq", ".title")[/\d+\.\d+\.\d+/]
+end
+
+def main(argv)
+  abort "usage: #{RECORDED_SCRIPT} <profile>" unless argv.length == 1 && !argv.first.start_with?("-")
+  profile = argv.first
+
+  base = sync_main
+  desktop_reads_the_manifest
+  step "installing the locked dependencies"
+  run! "pnpm", "install", "--frozen-lockfile"
+
+  current = package_version
+  raising = published?(current)
+  abort "date the top changelog section as \"## #{current} — DD.MM.YYYY\" first" unless raising || dated?(current)
+  branch = raising ? "release/#{next_patch.first}" : "release/#{current}-live-check"
+  run! "git", "switch", "-C", branch
+  begin
+    version = raising ? raise_version(current) : current
+    if raising
+      branch = "release/#{version}"
+      run! "git", "branch", "-M", branch
+      run! "git", "commit", "--all", "--message", "chore(release): #{version}"
+    end
+
+    step "building #{version}"
+    run! "pnpm", "build"
+    abort "the live check failed; nothing was recorded or pushed" unless live_check(profile)
+
+    step "recording the live check"
+    record = output!("pnpm", "exec", "cli-dev", "live", "record", "--script", RECORDED_SCRIPT).lines.last.strip
+    puts record
+    run! "git", "commit", "--message", "chore(release): record the live check of #{version}", "--", LIVE_CHECKS
+  rescue SystemExit
+    system("git", "switch", "--discard-changes", "main", chdir: ROOT)
+    puts "back on main; the local branch #{branch} keeps what was done, nothing was pushed"
+    raise
+  end
+
+  step "opening the release pull request"
+  run! "git", "push", "--set-upstream", "origin", branch
+  run! "git", "switch", "main"
+  pr = output!("gh", "pr", "create", "--base", "main", "--head", branch, "--title", "chore(release): #{version}",
+               "--body", release_body(version, record))
+  puts pr
+  merge(pr, base)
+
+  step "publishing #{version}"
+  run! RELEASE, "--local"
+end
+
+main(ARGV) if $PROGRAM_NAME == __FILE__

@@ -64,7 +64,8 @@ const participantsOf = (record: CallRecord): SourceParticipant[] => {
     },
     {
       ...none,
-      identityExternalId: `phone:${phone ?? record.phone}`,
+      // A number that is no phone number (an extension) is `number:<raw>`, the key cli-core's call reader expects.
+      identityExternalId: phone ? `phone:${phone}` : `number:${record.phone}`,
       email: null,
       phone,
       displayName: null,

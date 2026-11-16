@@ -4,6 +4,7 @@ import { type MeetingStore, type MeetingTranscriptReceiptStore, transcribeMeetin
 import type { Pcm } from "@wirecat/cli-core/speech"
 import type { BeelineApi } from "./beeline-api.js"
 import { callTranscriptionSource, type Recognition, type Recognize } from "./call-transcription.js"
+import { keepRecording } from "./recordings.js"
 
 export interface TranscribeOptions {
   /** Which stored calls, in `meetings list`'s query language. */
@@ -33,6 +34,8 @@ export interface TranscribePorts {
   decode: (bytes: Uint8Array) => Promise<Pcm[]>
   recognize: Recognize
   recognition: Recognition
+  /** The folder a transcribed call's recording is kept in; without it the recording is dropped. */
+  keepIn?: string
 }
 
 /** cli-core's decoder reads at most an hour of audio (`LONGEST_AUDIO_SECONDS`). */
@@ -71,12 +74,10 @@ export const transcribeCalls = async (
       const bytes = await ports.api.recording(call.externalId)
       const channels = await ports.decode(bytes)
       const source = callTranscriptionSource(bytes, channels, ports.recognize, ports.recognition)
-      await transcribeMeeting(
-        source,
-        store,
-        { accountId, externalId: call.externalId, now: (options.now ?? Date.now)() },
-        { apply: true },
-      )
+      const now = (options.now ?? Date.now)()
+      await transcribeMeeting(source, store, { accountId, externalId: call.externalId, now }, { apply: true })
+      const details = ports.keepIn ? await store.meeting(call.id) : null
+      if (ports.keepIn && details) await keepRecording(store, details, bytes, ports.keepIn, now)
       report.transcribed++
       report.audio_seconds += Math.round((call.durationMs ?? 0) / 1000)
       options.progress?.(`${index + 1}/${Math.min(pending.length, options.limit)} meeting ${call.id} transcribed`)
@@ -93,7 +94,8 @@ export const transcribeCalls = async (
       report.failed.push({
         meeting: call.id,
         reason: String(reason),
-        message: error instanceof Error ? error.message : "the call could not be transcribed",
+        // Only beeline's and cli-core's own errors are worded for the answer; any other may carry a path or a value.
+        message: isCliError(error) ? error.message : "the call could not be transcribed",
       })
       options.progress?.(`${index + 1}/${Math.min(pending.length, options.limit)} meeting ${call.id} failed: ${reason}`)
     }

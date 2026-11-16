@@ -1,0 +1,80 @@
+{
+  "command": "node",
+  "args": ["../dist/bin/beeline.js"],
+  "previous": {
+    "entry": "./previous/node_modules/@wirecat/previous-cli/dist/bin/beeline.js",
+    "version": "0.2.0"
+  },
+  "canaries": ["wirecat-synthetic-manager-canary"],
+  "cases": [
+    {
+      "id": "seed-previous-sync",
+      "args": ["{{previousEntry}}"],
+      "entry": "./seed.mjs",
+      "exit": 0,
+      "stream": "stdout",
+      "kind": "json",
+      "json": {
+        "seeded": true
+      }
+    },
+    {
+      "id": "previous-list",
+      "args": ["contract", "meetings", "list", "--json"],
+      "exit": 0,
+      "stream": "stdout",
+      "kind": "json",
+      "previous": true,
+      "allowSensitiveOutput": true,
+      "capture": {
+        "meeting": "/items/0/id"
+      }
+    },
+    {
+      "id": "candidate-list",
+      "args": ["contract", "meetings", "list", "--json"],
+      "exit": 0,
+      "stream": "stdout",
+      "kind": "json",
+      "allowSensitiveOutput": true,
+      "json": {
+        "items": [
+          {
+            "id": "{{meeting}}",
+            "title": "Входящий звонок · wirecat-synthetic-manager-canary Example ↔ 1234"
+          },
+          {
+            "title": "Входящий звонок · wirecat-synthetic-manager-canary Example ↔ 5678"
+          }
+        ]
+      }
+    },
+    {
+      "id": "candidate-show",
+      "args": ["contract", "meetings", "show", "{{meeting}}", "--json"],
+      "exit": 0,
+      "stream": "stdout",
+      "kind": "json",
+      "allowSensitiveOutput": true,
+      "json": {
+        "item": {
+          "call": {
+            "direction": "in",
+            "client_phone": null,
+            "manager": {
+              "name": "wirecat-synthetic-manager-canary Example"
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "missing-meeting",
+      "args": ["contract", "meetings", "show", "999999", "--json"],
+      "exit": 6,
+      "stream": "stderr",
+      "kind": "json",
+      "errorCode": "not_found"
+    }
+  ]
+}

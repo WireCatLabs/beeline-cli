@@ -199,3 +199,25 @@ it("lists a call over an hour as failed without downloading it", async () => {
   expect(JSON.parse(done.out).item.failed).toEqual([expect.objectContaining({ reason: "recording.too-long" })])
   expect(downloads).toEqual([])
 })
+
+it("keeps a transcribed call's recording for the owner only and names it in meetings show; the setting drops it", async () => {
+  const { existsSync, rmSync, statSync } = await import("node:fs")
+  const listed = JSON.parse((await ran(["work", "meetings", "list", "--json"])).out).items as { id: string }[]
+  const id = listed[0]?.id
+  const transcribe = () =>
+    ran(["work", "meetings", "transcribe", `id:${id}`, "--replace", "--json"], { speech: speech() })
+  expect((await transcribe()).code).toBe(0)
+
+  const shown = JSON.parse((await ran(["work", "meetings", "show", String(id), "--json"])).out).item
+  const [recording] = shown.attachments as { kind: string; mime: string; local_path: string }[]
+  expect(recording).toMatchObject({ kind: "recording", mime: "audio/mpeg" })
+  const path = recording?.local_path ?? ""
+  expect(path).toMatch(/recordings\/work\/\d+\.mp3$/)
+  expect(statSync(path).mode & 0o777).toBe(0o600)
+
+  rmSync(path)
+  expect((await ran(["work", "config", "set", "keep_recordings", "false", "--json"])).code).toBe(0)
+  expect((await transcribe()).code).toBe(0)
+  expect(existsSync(path)).toBe(false)
+  expect((await ran(["work", "config", "unset", "keep_recordings", "--json"])).code).toBe(0)
+})

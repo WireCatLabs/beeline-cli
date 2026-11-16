@@ -7,6 +7,7 @@ import {
   baseContext,
   environmentOf,
   FETCH,
+  fromFile,
   refuseOffline,
 } from "@wirecat/cli-core/cli"
 import { MEETING_QUERY, type MeetingStore, type MeetingTranscriptReceiptStore } from "@wirecat/cli-core/meetings"
@@ -17,6 +18,7 @@ import * as v from "valibot"
 import type { BeelineApi } from "../beeline.js"
 import { configuration } from "../config.js"
 import { IDENTITY } from "../identity.js"
+import { KEEP_RECORDINGS, recordingsFolder } from "../recordings.js"
 import type { TranscribeReport } from "../transcribe-calls.js"
 import { DEFAULT_SPEECH_MODEL } from "./models.js"
 
@@ -117,6 +119,7 @@ export const transcribeCommand = (deps: TranscribeDeps): Command => {
         { reason: "model.not-downloaded" },
       )
     const { transcribeCalls } = await import("../transcribe-calls.js")
+    const keep = fromFile<boolean>(context.settings, KEEP_RECORDINGS, true).value !== false
     const recognition = speech.localSpeechRecognitionModel(model)
     const signal = deps.signal()
     // Unbounded: run() already stops this cooperative command at its deadline by its signal, and it answers with what
@@ -138,6 +141,7 @@ export const transcribeCommand = (deps: TranscribeDeps): Command => {
             },
             recognize: (pcm) => speech.recognizeLocalPieces(model, pcm, { env, ...(signal ? { signal } : {}) }),
             recognition: { engine: recognition.engine, model: recognition.model, version: recognition.version },
+            ...(keep ? { keepIn: recordingsFolder(env, context.settings.profile) } : {}),
           },
           {
             query,

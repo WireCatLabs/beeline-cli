@@ -14,12 +14,10 @@ How the tests run, and what they never touch. The rules are the handbook's
   `scripts/test-matrix-untested.ts`.
 - `pnpm contracts:check` runs the built CLI against `contracts/plan.json`: help, discovery, errors and the MCP tool
   list. `pnpm exec cli-contract contracts/plan.json --update` rewrites the snapshots; review the diff.
-- `pnpm contracts:upgrade` does not exist yet, and `.github/workflows/ci.yml` skips the step. It needs both local
-  state of the CLI's own (a store, a sync cursor, any other file its code writes and reads back) and a published
-  version to upgrade from; the skeleton has neither, and the config file and run records are cli-core's
-  ([WC-TEST-14](../../node_modules/@wirecat/cli-base/docs/standards/testing.md)). Once the CLI keeps such state and its
-  first version is on npm, add the script, as
-  [drive-cli does](https://github.com/WireCatLabs/drive-cli/blob/150b105569a98fbd0d4b66349305ad84128adfda/package.json#L37), and remove the skip.
+- `pnpm contracts:upgrade` installs the last release into `contracts/previous/`, lets it sync fake call records into a
+  throwaway store (`contracts/seed.mjs`), then runs this build on that store: list, show and a missing call
+  ([WC-TEST-14](../../node_modules/@wirecat/cli-base/docs/standards/testing.md)). Raise the version in
+  `contracts/previous/package.json` and `contracts/upgrade.json` after each release.
 - `pnpm smoke` installs the packed package into a temporary folder and runs it offline.
 - `pnpm audit:commands` audits the command tree beside the latest published WireCat CLIs.
 

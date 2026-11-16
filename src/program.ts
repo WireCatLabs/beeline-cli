@@ -44,7 +44,7 @@ const update = appUpdate({
 const mcpCommand = () =>
   appMcpCommand(IDENTITY, configuration, {
     name: "Beeline Cloud PBX",
-    untrusted: ["call comments", "employee names and departments", "client phone numbers", "call transcripts"],
+    untrusted: ["employee names", "client phone numbers", "call transcripts"],
     permissionExample: "meetings.sync=deny",
     skill: SKILL,
     signedIn: (profile, env, keyring) =>

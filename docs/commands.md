@@ -177,7 +177,7 @@ beeline meetings show <meeting> [options]
 
 **Returns:** meeting details — ref, id, provider_id, provider, account, title, url, started_at, and 21 more; every field: beeline commands info meetings show
 
-**Next usually:** `beeline meetings transcript <meeting>`, `beeline meetings export <meeting>`
+**Next usually:** `beeline meetings transcript <meeting>`, `beeline meetings export <meeting>`, `beeline meetings download <meeting>`
 
 **Example:** `beeline work meetings show 1 --json`
 
@@ -309,6 +309,28 @@ beeline meetings transcribe [query] [options]
 **Returns:** call transcription report — transcribed, audio_seconds, failed, remaining, stopped; every field: beeline commands info meetings transcribe
 
 **Example:** `beeline work meetings transcribe --max-meetings 20 --json`, `beeline work meetings transcribe "duration_ms>=60000" --json`, `beeline work meetings transcribe id:4494 --replace --json`
+
+### `beeline meetings download`
+
+download the recording of a stored call from Beeline and write it to a new file of your choice; meetings transcribe already keeps a copy for WireCat Desktop unless keep_recordings is false
+
+**Changes something on this computer only.**
+
+```sh
+beeline meetings download <meeting> [options]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `meeting` | required | stored call id, or the ref meetings list prints (meeting:1/375). |
+
+| Option | What it does |
+|---|---|
+| `--output <file>` | the new file to write; one that exists is refused. |
+
+**Returns:** call recording — meeting, provider_id, output, bytes; every field: beeline commands info meetings download
+
+**Example:** `beeline work meetings download 375 --output call-375.mp3 --json`
 
 ## `beeline events`
 
@@ -701,7 +723,7 @@ beeline config set <setting> <value> [options]
 
 | Argument | | What it is |
 |---|---|---|
-| `setting` | required | one of: limit, timeout_ms, color, record, record_input, keep_runs_for_days, keep_successful_runs_for_days, keep_store_runs_for_days, runs_size_limit_mb, permissions, requests_per_minute, search_reranker, embedding_provider, embedding_model, embedding_base_url, embedding_dims, models, update_check, skill_hint, search_stemmers.cyrillic, search_stemmers.latin, owner_languages, crm.<provider>:<account>.links, crm.<provider>:<account>.company-types, crm.<provider>:<account>.scope, crm.<provider>:<account>.unassigned, crm.<provider>:<account>.self, crm.<provider>:<account>.stage-tasks, crm.<provider>:<account>.activities. |
+| `setting` | required | one of: limit, timeout_ms, color, record, record_input, keep_runs_for_days, keep_successful_runs_for_days, keep_store_runs_for_days, runs_size_limit_mb, permissions, requests_per_minute, search_reranker, embedding_provider, embedding_model, embedding_base_url, embedding_dims, models, keep_recordings, update_check, skill_hint, search_stemmers.cyrillic, search_stemmers.latin, owner_languages, crm.<provider>:<account>.links, crm.<provider>:<account>.company-types, crm.<provider>:<account>.scope, crm.<provider>:<account>.unassigned, crm.<provider>:<account>.self, crm.<provider>:<account>.stage-tasks, crm.<provider>:<account>.activities. |
 | `value` | required | a number, true or false; for a group tg:work,max:Alice,email:me@x. |
 
 | Option | What it does |
@@ -722,7 +744,7 @@ beeline config unset <setting> [options]
 
 | Argument | | What it is |
 |---|---|---|
-| `setting` | required | one of: limit, timeout_ms, color, record, record_input, keep_runs_for_days, keep_successful_runs_for_days, keep_store_runs_for_days, runs_size_limit_mb, permissions, requests_per_minute, search_reranker, embedding_provider, embedding_model, embedding_base_url, embedding_dims, models, update_check, skill_hint, search_stemmers.cyrillic, search_stemmers.latin, owner_languages, crm.<provider>:<account>.links, crm.<provider>:<account>.company-types, crm.<provider>:<account>.scope, crm.<provider>:<account>.unassigned, crm.<provider>:<account>.self, crm.<provider>:<account>.stage-tasks, crm.<provider>:<account>.activities. |
+| `setting` | required | one of: limit, timeout_ms, color, record, record_input, keep_runs_for_days, keep_successful_runs_for_days, keep_store_runs_for_days, runs_size_limit_mb, permissions, requests_per_minute, search_reranker, embedding_provider, embedding_model, embedding_base_url, embedding_dims, models, keep_recordings, update_check, skill_hint, search_stemmers.cyrillic, search_stemmers.latin, owner_languages, crm.<provider>:<account>.links, crm.<provider>:<account>.company-types, crm.<provider>:<account>.scope, crm.<provider>:<account>.unassigned, crm.<provider>:<account>.self, crm.<provider>:<account>.stage-tasks, crm.<provider>:<account>.activities. |
 
 | Option | What it does |
 |---|---|

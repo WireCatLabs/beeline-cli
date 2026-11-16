@@ -35,7 +35,8 @@ const clientIds = () =>
   sql((db) =>
     db
       .prepare(
-        "SELECT external_id AS id, phone FROM identities WHERE provider = 'beeline' AND external_id LIKE 'phone:%'",
+        `SELECT external_id AS id, phone FROM identities
+         WHERE provider = 'beeline' AND (external_id LIKE 'phone:%' OR external_id LIKE 'number:%')`,
       )
       .all()
       .map((row) => ({ id: String(row.id), phone: row.phone })),
@@ -56,20 +57,25 @@ afterEach(() => {
   delete process.env.BEELINE_TOKEN
 })
 
-it("names the old caller ids' E.164 ids and leaves the current ones and extensions", () => {
+it("names the current id of each old caller id and leaves the E.164 ones", () => {
   expect(
     oldClientRekeys([
       "phone:9000000009",
       "phone:+9000000009",
       "phone:+4950000001",
       "phone:+79000000009",
+      "phone:+70000000005",
       "phone:1234",
+      "phone:+0000000001",
+      "number:1234",
       "abonent:70000000001@example.test",
     ]),
   ).toEqual([
     { from: "phone:9000000009", to: "phone:+79000000009", phone: "+79000000009" },
     { from: "phone:+9000000009", to: "phone:+79000000009", phone: "+79000000009" },
     { from: "phone:+4950000001", to: "phone:+74950000001", phone: "+74950000001" },
+    { from: "phone:1234", to: "number:1234" },
+    { from: "phone:+0000000001", to: "number:0000000001" },
   ])
 })
 
@@ -93,12 +99,12 @@ it("a sync moves the callers an older build stored to their E.164 ids, merging i
 
   const second = await sync([])
   expect(second.code, second.err).toBe(0)
-  expect(second.err).toContain("moved old caller ids to their E.164 numbers: 2 renamed, 1 merged")
+  expect(second.err).toContain("moved old caller ids to their current ids: 2 renamed, 1 merged")
   expect(clientIds()).toEqual(
     expect.arrayContaining([
       { id: "phone:+79000000001", phone: "+79000000001" },
       { id: "phone:+79000000002", phone: "+79000000002" },
-      { id: "phone:1234", phone: null },
+      { id: "number:1234", phone: null },
     ]),
   )
   expect(clientIds()).toHaveLength(3)
@@ -129,6 +135,46 @@ it("merges an old caller id into the E.164 id a newer sync already stored", asyn
   expect(synced.code, synced.err).toBe(0)
   expect(synced.err).toContain("0 renamed, 1 merged")
   expect(clientOfMeeting("802")).toBe("phone:+79000000004")
+})
+
+it("a sync moves an extension from its old phone: id to number:, merging into one already there", async () => {
+  process.env.BEELINE_TOKEN = "test-token"
+  const first = await sync([
+    record(1001, { phone: "1001" }),
+    record(1002, { phone: "1002" }),
+    record(1003, { phone: "1003" }),
+    record(1004, { phone: "9000000007" }),
+  ])
+  expect(first.code, first.err).toBe(0)
+  expect(clientOfMeeting("1001")).toBe("number:1001")
+  // As 0.2.0 wrote them; 1003's client is 1002's number, which a newer sync already stored as number:1002.
+  sql((db) => {
+    const rename = db.prepare("UPDATE identities SET external_id = ? WHERE external_id = ?")
+    rename.run("phone:1001", "number:1001")
+    rename.run("phone:1002", "number:1003")
+  })
+  expect(clientOfMeeting("1003")).toBe("phone:1002")
+
+  const second = await sync([])
+  expect(second.code, second.err).toBe(0)
+  expect(second.err).toContain("moved old caller ids to their current ids: 1 renamed, 1 merged")
+  expect(clientIds()).toEqual(
+    expect.arrayContaining([
+      { id: "number:1001", phone: null },
+      { id: "number:1002", phone: null },
+      { id: "phone:+79000000007", phone: "+79000000007" },
+    ]),
+  )
+  expect(clientIds().map(({ id }) => id)).not.toEqual(expect.arrayContaining(["phone:1001"]))
+  expect(clientIds().map(({ id }) => id)).not.toEqual(expect.arrayContaining(["phone:1002"]))
+  expect(clientOfMeeting("1001")).toBe("number:1001")
+  expect(clientOfMeeting("1002")).toBe("number:1002")
+  expect(clientOfMeeting("1003")).toBe("number:1002")
+  expect(clientOfMeeting("1004")).toBe("phone:+79000000007")
+
+  const third = await sync([])
+  expect(third.code, third.err).toBe(0)
+  expect(third.err).not.toContain("moved old caller ids")
 })
 
 it("a call synced again gets its direction, the client's number and a corrected title", async () => {

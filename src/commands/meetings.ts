@@ -30,6 +30,7 @@ import { Command, type Command as CommandType, InvalidArgumentError } from "comm
 import type { BeelineApi } from "../beeline.js"
 import { configuration } from "../config.js"
 import { IDENTITY } from "../identity.js"
+import { downloadCommand } from "./download.js"
 import { transcribeCommand } from "./transcribe.js"
 
 interface Opened {
@@ -226,6 +227,15 @@ export const meetingsMount = () => {
           },
         }),
       )
+      meetings?.addCommand(
+        downloadCommand({
+          store: () => need().store.meetings,
+          accountId: () => need().accountId,
+          api: () => need().api(),
+          meetingId,
+          write: (saved, command) => answers.push(() => renderAnswer(command, outputFor(command), itemOf(saved))),
+        }),
+      )
       for (const group of holder.commands) {
         if (group.commands.length && !hasSharedContract(group)) annotate(group, { effects: NO_EFFECTS })
         for (const leaf of leaves(group)) {
@@ -276,7 +286,7 @@ export const meetingsMount = () => {
         const moved = await rekeyOldClients(store)
         if (moved.renamed + moved.merged + moved.refused > 0)
           run.streams?.diagnostic(
-            `moved old caller ids to their E.164 numbers: ${moved.renamed} renamed, ${moved.merged} merged` +
+            `moved old caller ids to their current ids: ${moved.renamed} renamed, ${moved.merged} merged` +
               (moved.refused ? `, ${moved.refused} left as they were (they could not merge)` : ""),
           )
       }
