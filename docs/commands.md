@@ -197,7 +197,7 @@ beeline meetings transcript <meeting> [options]
 |---|---|
 | `--history` | include superseded transcript versions. |
 
-**Returns:** meeting transcript — ref, meeting, source, language, superseded_at, created_at, lines; every field: beeline commands info meetings transcript
+**Returns:** meeting transcript — ref, meeting, source, language, superseded_at, created_at, lines, untrusted; every field: beeline commands info meetings transcript
 
 **Example:** `beeline work meetings transcript 1 --json`
 
@@ -221,7 +221,7 @@ beeline meetings export <meeting> [options]
 | `--transcript-id <id>` | export a specific transcript version. |
 | `--output <file>` | write content to a new file through the host's writer. |
 
-**Returns:** meeting export — meeting_id, format, filename, content, output; every field: beeline commands info meetings export
+**Returns:** meeting export — meeting_id, format, filename, content, untrusted, output; every field: beeline commands info meetings export
 
 **Example:** `beeline work meetings export 1 --format markdown --json`
 
@@ -362,7 +362,7 @@ beeline search meetings <query> [options]
 | `--cursor <cursor>` | continue from the previous page's page.next_cursor, with the same query and filters. |
 | `--max-read-bytes <bytes>` | most stored bytes to read, 1 through 67108864 (default 4194304). |
 
-**Returns:** meeting hit — ref, meeting, scope, id, excerpt, offset_ms, language, line, and 5 more; every field: beeline commands info search meetings
+**Returns:** meeting hit — ref, meeting, scope, id, excerpt, offset_ms, language, line, and 8 more; every field: beeline commands info search meetings
 
 **Next usually:** `beeline meetings show <meeting>`, `beeline meetings transcript <meeting>`, `beeline meetings export <meeting>`
 

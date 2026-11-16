@@ -1,6 +1,6 @@
 {
   "name": "@wirecat/beeline-cli",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Beeline Cloud PBX call recordings as meetings: sync the call records, transcribe the calls on this computer, search and export them",
   "license": "Apache-2.0",
   "author": "Viacheslav Ptsarev",
@@ -59,8 +59,8 @@
     "docs:spell": "cspell lint --config cspell.json --no-progress --no-summary README.md README.ru.md SECURITY.md CHANGELOG.md AGENTS.md CLAUDE.md 'docs/*.md' 'skills/**/*.md'"
   },
   "dependencies": {
-    "@wirecat/cli-base": "0.100.0",
-    "@wirecat/cli-core": "0.663.0",
+    "@wirecat/cli-base": "0.103.0",
+    "@wirecat/cli-core": "0.671.0",
     "commander": "15.0.0",
     "valibot": "1.5.0"
   },
