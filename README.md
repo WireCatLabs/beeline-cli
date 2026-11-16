@@ -194,8 +194,9 @@ More: [settings](docs/configuration.md).
 ## Security
 
 - The token is sent only to Beeline, in a request header. No command, error, log or run record shows it.
-- Recordings are held in memory while they are transcribed, and written to disk only by `meetings download`, to the
-  new file you name.
+- `meetings transcribe` keeps each call's recording in beeline's own folder (`~/.local/state/beeline-cli/recordings/`),
+  readable only by you, so WireCat Desktop plays it. `beeline <profile> config set keep_recordings false` turns that
+  off: the recording is then dropped once transcribed. `meetings download` writes one to a new file you name.
 - The store keeps client phone numbers and the managers' names, emails and extensions. Treat it like the calls
   themselves.
 

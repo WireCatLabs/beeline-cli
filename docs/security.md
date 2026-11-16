@@ -26,9 +26,11 @@ What WireCat CLIs share — the keyring, permissions, MCP, run records and what 
 
 ## Recordings and speech
 
-- A recording is downloaded into memory, transcribed and dropped. The store keeps only its size, its length and a
-  hash, so a second run can tell the same recording. Only `meetings download --output <file>` writes one to disk: to
-  a new file only you can read, never over a file that exists.
+- A recording is downloaded into memory and transcribed. Then `meetings transcribe` keeps it in beeline's state folder
+  (`recordings/<profile>/<call id>.mp3`, the folder `0700`, the file `0600`), and `meetings show` names the file, so
+  WireCat Desktop plays it. `config set keep_recordings false` on a profile drops each recording once transcribed
+  instead; a file kept before stays until you delete it. `meetings download --output <file>` writes one to a new file
+  only you can read, never over a file that exists.
 - Speech is recognized on this computer, by a model that `beeline models download` fetches once into the folder every
   WireCat CLI shares. The recording and its transcript are sent to no speech service. A cloud option, such as OpenAI,
   is planned and not offered yet.

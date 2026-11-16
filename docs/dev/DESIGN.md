@@ -79,4 +79,12 @@ landline, which everyone in an office shares. It joins only when the identity is
 must be there. The manager is keyed by Beeline's `abonent` and gets no phone: an extension is the company's, not a
 person's. `src/calls.test.ts` checks both cases against a Bitrix24 contact.
 
+## A transcribed call's recording stays on this computer
+
+Owner, 2026-11-16 ("1 A, но можно отменить в настройках"). `meetings transcribe` keeps each recording it
+transcribed in beeline's state folder (cli-base's `resolvePaths`, `recordings/<profile>/<call id>.mp3`, the folder
+`0700`, the file `0600`) and saves it as the call's `recording` attachment with its `local_path`, which `meetings
+show` prints (cli-core 0.668.0). WireCat Desktop plays a call only from that path, as it does pbx's. The profile
+setting `keep_recordings` (default `true`) turns it off; then a recording is dropped once transcribed, as before.
+
 ## Open questions for the owner

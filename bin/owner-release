@@ -5,13 +5,15 @@
 #
 #   bin/owner-release <profile>
 #
-# 1. Checks that main is clean, fetches it and fast-forwards it to origin/main.
+# 1. Checks that main is clean, fetches it and fast-forwards it to origin/main, and that the released WireCat Desktop
+#    reads this manifest.
 # 2. Installs the locked dependencies.
 # 3. When npm already has the version in package.json, raises it: collects changes/ and `## Unreleased` into a dated
 #    section, and picks the level its headings need (scripts/version-level.ts). A version raised and dated by hand is
 #    released as it is.
 # 4. Builds, and runs the read-only live check of Beeline on <profile> with that build: a throwaway HOME, XDG folders
-#    and store, no D-Bus, so the owner's real store and keyring stay untouched. It prints counts and field names only.
+#    and store, no D-Bus, so the owner's real store and keyring stay untouched. It syncs a week of calls, lists three,
+#    transcribes one and checks its recording is kept (mode 0600). It prints counts and field names only.
 # 5. Records the check in docs/dev/live-checks.txt, which bin/release reads.
 # 6. Opens the release pull request with the version and the record in it, waits for its checks and squash merges it.
 #    The record rides in the release commit, so no second pull request is needed.
@@ -44,6 +46,9 @@ MODEL = "gigaam-v3"
 # The name the record carries: bin/release checks the record, not who wrote it.
 RECORDED_SCRIPT = "bin/owner-release"
 KEYRING_SERVICE = "beeline-cli"
+# The manifest declares `meetings` since 0.3.0, which Desktop 0.6.8 refuses: publish only once Desktop reads it.
+DESKTOP_REPO = "WireCatLabs/wirecat-desktop"
+DESKTOP_NEEDED = "0.6.9"
 
 def step(title)
   puts "\n== #{title}"
@@ -76,6 +81,15 @@ def sync_main
   run! "git", "fetch", "--tags", "origin"
   run! "git", "merge", "--ff-only", "origin/main"
   output!("git", "rev-parse", "HEAD")
+end
+
+def desktop_reads_the_manifest
+  step "WireCat Desktop #{DESKTOP_NEEDED} or newer is released"
+  latest = output!("gh", "api", "repos/#{DESKTOP_REPO}/releases/latest", "--jq", ".tag_name").delete_prefix("v")
+  puts "latest Desktop: #{latest}"
+  return if Gem::Version.new(latest) >= Gem::Version.new(DESKTOP_NEEDED)
+
+  abort "Desktop #{latest} refuses this manifest; release Desktop #{DESKTOP_NEEDED} first"
 end
 
 def unreleased_text(changelog)
@@ -201,6 +215,12 @@ def live_check(profile)
       puts "#{item['transcribed'].to_i} transcribed, #{item['audio_seconds'].to_i} s of audio, " \
            "#{item['remaining'].to_i} remaining, failed: #{errors.empty? ? 'none' : errors.join(', ')}"
       failed = true unless answer && item["transcribed"].to_i >= 1 && errors.empty?
+
+      step "the transcribed call's recording is kept on this computer, for the owner only"
+      kept = Dir.glob(File.join(sandbox, "**/recordings", profile, "*.mp3"))
+      private = kept.count { |path| (File.stat(path).mode & 0o777) == 0o600 }
+      puts "#{kept.length} recording(s) kept, #{private} of them readable by the owner only"
+      failed = true unless kept.length >= 1 && private == kept.length
     else
       puts "!! no #{MODEL} in #{MODELS}: run `beeline models download #{MODEL}` once"
       failed = true
@@ -255,6 +275,7 @@ def main(argv)
   profile = argv.first
 
   base = sync_main
+  desktop_reads_the_manifest
   step "installing the locked dependencies"
   run! "pnpm", "install", "--frozen-lockfile"
 
