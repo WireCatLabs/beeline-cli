@@ -69,9 +69,10 @@ Owner, 2026-11-13 (NEED-2600 A). The client participant carries its number as `p
 country to the source, and Beeline is a Russian PBX. A number that plan does not read (an extension, a foreign number)
 keeps its raw digits in the id and gets no phone.
 
-A store written by an unpublished build before this fix keeps `phone:<national>` ids (the owner's: 1626 of them on
-2026-11-13). They stay until cli-core offers an identity rename and merge and beeline calls it once on a writable
-open; beeline writes no SQL of its own. A fresh install is not affected. cli-core links the callers a sync saved
+A store written by an unpublished build before this fix has `phone:<national>` ids, and a build of one day
+`phone:+<national>` ones (the owner's: 1626 old ids on 2026-11-13). Each `meetings sync` first moves them to the id
+`clientPhone` gives, through cli-core's `rekeyIdentities` (0.674.0), which merges one into the identity already there;
+beeline writes no SQL of its own. A second run finds nothing to move. A fresh install is not affected. cli-core links the callers a sync saved
 to the CRM contact that holds the same number: at once for a mobile only the two of them hold, as a proposal for a
 landline, which everyone in an office shares. It joins only when the identity is exactly `phone:<E.164>`, so the `+`
 must be there. The manager is keyed by Beeline's `abonent` and gets no phone: an extension is the company's, not a

@@ -29,6 +29,7 @@ export const callTitle = (record: CallRecord): string =>
   (clientPhone(record.phone) ?? record.phone)
 
 const meetingOf = (record: CallRecord): SourceMeeting => ({
+  call: { direction: record.direction === "INBOUND" ? "in" : "out", clientPhone: clientPhone(record.phone) ?? null },
   series: null,
   occurrence: {
     id: record.id,

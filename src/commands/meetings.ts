@@ -258,7 +258,7 @@ export const meetingsMount = () => {
       const run = environmentOf(at)
       const { settings, env, keyring } = baseContext(at, configuration.resolveSettings)
       const { profile } = settings
-      const [{ openProfileStore }, { beelineFor }, { callSource }] = await Promise.all([
+      const [{ openProfileStore, rekeyOldClients }, { beelineFor }, { callSource }] = await Promise.all([
         import("../store.js"),
         import("../beeline.js"),
         import("../call-source.js"),
@@ -272,6 +272,14 @@ export const meetingsMount = () => {
       const close = () => (closed ??= store.close())
       // Still tracked: a command that fails never reaches postAction.
       run.trackCloseable?.({ close })
+      if (pathOf(at).join(" ") === "meetings sync" && at.optsWithGlobals().dryRun !== true) {
+        const moved = await rekeyOldClients(store)
+        if (moved.renamed + moved.merged + moved.refused > 0)
+          run.streams?.diagnostic(
+            `moved old caller ids to their E.164 numbers: ${moved.renamed} renamed, ${moved.merged} merged` +
+              (moved.refused ? `, ${moved.refused} left as they were (they could not merge)` : ""),
+          )
+      }
       let api: BeelineApi | undefined
       let source: MeetingSource | undefined
       const signedIn = () => {

@@ -102,9 +102,10 @@ Calls synced by a version before this one are not linked until a sync saves them
 days again, `--since-time` reaches further back. The same holds for a contact added to Bitrix24 after its calls were
 synced.
 
-A store that already holds calls synced by an unpublished build from before 13.11.2026 keeps their old client numbers
-(`phone:9…`, without `+7`). Those calls do not link, and a re-sync adds a second client to each, until a later version
-migrates them. A fresh install is not affected.
+A store that holds calls synced by an unpublished build from before 13.11.2026 has their clients under old numbers
+(`phone:9…`, without `+7`). Since 0.2.0, `meetings sync` moves each to its `+7` number first, merging it into the client
+that number already has, and says how many it moved. A `--since-time` back to the first call then also corrects the
+older calls' titles. A fresh install is not affected.
 
 More: [use it](docs/usage.md).
 

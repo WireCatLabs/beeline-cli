@@ -6,14 +6,23 @@ Notable changes to `@wirecat/beeline-cli`. One section per version, newest first
 
 ### Added
 
-- **The meetings answers mark other people's text untrusted** (cli-core 0.671.0, was 0.663.0; cli-base 0.103.0, was
-  0.100.0). `meetings transcript` and `meetings export` answer an `untrusted` list: each line's text and speaker, and
+- **A call says its direction, its manager and the client's number.** `meetings list`, `meetings show` and the
+  meetings of a deal, lead or person in another WireCat CLI carry `call`: `direction` (`in` or `out`), `manager`
+  (`name`, `person`) and `client_phone`. A call synced before gets them at its next sync; `--since-time` reaches the
+  older ones.
+- **The meetings answers mark other people's text untrusted** (cli-core 0.674.0, was 0.663.0; cli-base 0.103.0, was
+  0.100.0). The shared store moves to version 67, which the other WireCat CLIs on the same store open from their
+  releases on cli-core 0.674.0. `meetings transcript` and `meetings export` answer an `untrusted` list: each line's text and speaker, and
   the export's `content`. A caller and its agent read those fields as data, not instructions.
 - **A `search meetings` hit may carry `by`, `score` and `passage`**, the fields of a search by meaning, so beeline's
   hits keep the same shape as every other meetings tool.
 
 ### Fixed
 
+- **`meetings sync` moves callers stored under old numbers to their `+7` numbers.** An unpublished build from before
+  13.11.2026 kept a client as `phone:9…` (or, for a day, `phone:+9…`), so its calls did not link to the CRM contact
+  and a new sync added a second client. Each sync now first renames such a client, or merges it into the client the
+  `+7` number already has, and prints how many it moved. A second sync finds nothing to move.
 - **`meetings transcribe --help` quotes its `duration_ms>=60000` example**, so a shell no longer reads `>` as a
   redirect to a file named `=60000`.
 
