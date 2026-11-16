@@ -7,7 +7,7 @@ ran it · ⛔ not tested offline, with the reason and where it is checked instea
 Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 [TESTING.md](TESTING.md) for how, and for the states and failures that cut across commands.
 
-**75 ✅ · 63 ⛔ · 0 ❌** — 45 commands, 93 options.
+**77 ✅ · 63 ⛔ · 0 ❌** — 46 commands, 94 options.
 
 | Command | Option | | Note |
 |---|---|---|---|
@@ -50,6 +50,8 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | `meetings transcribe` | `--replace` | ✅ |  |
 | `meetings transcribe` | `--max-meetings` | ✅ |  |
 | `meetings transcribe` | `--model` | ✅ |  |
+| `meetings download` |  | ✅ |  |
+| `meetings download` | `--output` | ✅ |  |
 | `events list` |  | ✅ |  |
 | `search meetings` |  | ✅ |  |
 | `search meetings` | `--meeting-id` | ⛔ | cli-core's shared meetings command, tested in cli-core's src/meetings/cli; beeline supplies only the store and the call source (src/calls.test.ts) |

@@ -177,7 +177,7 @@ beeline meetings show <meeting> [options]
 
 **Returns:** meeting details — ref, id, provider_id, provider, account, title, url, started_at, and 21 more; every field: beeline commands info meetings show
 
-**Next usually:** `beeline meetings transcript <meeting>`, `beeline meetings export <meeting>`
+**Next usually:** `beeline meetings transcript <meeting>`, `beeline meetings export <meeting>`, `beeline meetings download <meeting>`
 
 **Example:** `beeline work meetings show 1 --json`
 
@@ -309,6 +309,28 @@ beeline meetings transcribe [query] [options]
 **Returns:** call transcription report — transcribed, audio_seconds, failed, remaining, stopped; every field: beeline commands info meetings transcribe
 
 **Example:** `beeline work meetings transcribe --max-meetings 20 --json`, `beeline work meetings transcribe "duration_ms>=60000" --json`, `beeline work meetings transcribe id:4494 --replace --json`
+
+### `beeline meetings download`
+
+download the recording of a stored call from Beeline and write it to a new file; Beeline keeps the recording, this computer keeps only the transcript
+
+**Changes something on this computer only.**
+
+```sh
+beeline meetings download <meeting> [options]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `meeting` | required | stored call id, or the ref meetings list prints (meeting:1/375). |
+
+| Option | What it does |
+|---|---|
+| `--output <file>` | the new file to write; one that exists is refused. |
+
+**Returns:** call recording — meeting, provider_id, output, bytes; every field: beeline commands info meetings download
+
+**Example:** `beeline work meetings download 375 --output call-375.mp3 --json`
 
 ## `beeline events`
 

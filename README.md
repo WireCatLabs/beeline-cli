@@ -81,6 +81,9 @@ beeline work search meetings "доставка"
 More:
 
 - Export a call as Markdown or WebVTT: `beeline work meetings export 42 --format vtt --output call.vtt`.
+- Save a call's recording to listen to it: `beeline work meetings download 42 --output call-42.mp3`.
+- Find a client's calls by their number: `beeline work meetings list 'title:*79000000001' --json`. The title of a call
+  holds the client's number in international form.
 - Find a manager across the calls: `beeline work meetings people "Test Manager"`.
 - Search every WireCat store on this computer, chats and calls together, from any WireCat CLI with `search all`.
 
@@ -176,8 +179,8 @@ beeline work meetings sync --dry-run                       # what it would do an
 meetings: `session start` and `end`, `config set`, `unset`, `migrate` and `repair`, `skill install`, `mcp add` and
 `revoke`, `meetings repair`, and `upgrade`. It lets through what only adds: `meetings sync` still
 fetches new calls into the store, `meetings transcribe` adds transcripts (with `--replace`, the old one stays in the
-transcript's history), `models download` fetches a model, `meetings export --output` writes a new file inside a
-scheduled run's work folder and nowhere else, and `mcp serve`, `mcp server start` and `stop` run. A `--dry-run`
+transcript's history), `models download` fetches a model, `meetings export --output` and `meetings download` write
+a new file inside a scheduled run's work folder and nowhere else, and `mcp serve`, `mcp server start` and `stop` run. A `--dry-run`
 always runs, as it changes nothing.
 
 More: [settings](docs/configuration.md).
@@ -191,7 +194,8 @@ More: [settings](docs/configuration.md).
 ## Security
 
 - The token is sent only to Beeline, in a request header. No command, error, log or run record shows it.
-- Recordings are held in memory while they are transcribed, and never written to disk.
+- Recordings are held in memory while they are transcribed, and written to disk only by `meetings download`, to the
+  new file you name.
 - The store keeps client phone numbers and the managers' names, emails and extensions. Treat it like the calls
   themselves.
 

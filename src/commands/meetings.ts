@@ -30,6 +30,7 @@ import { Command, type Command as CommandType, InvalidArgumentError } from "comm
 import type { BeelineApi } from "../beeline.js"
 import { configuration } from "../config.js"
 import { IDENTITY } from "../identity.js"
+import { downloadCommand } from "./download.js"
 import { transcribeCommand } from "./transcribe.js"
 
 interface Opened {
@@ -224,6 +225,15 @@ export const meetingsMount = () => {
               : {}
             answers.push(() => renderAnswer(command, outputFor(command), itemOf(report, resume)))
           },
+        }),
+      )
+      meetings?.addCommand(
+        downloadCommand({
+          store: () => need().store.meetings,
+          accountId: () => need().accountId,
+          api: () => need().api(),
+          meetingId,
+          write: (saved, command) => answers.push(() => renderAnswer(command, outputFor(command), itemOf(saved))),
         }),
       )
       for (const group of holder.commands) {
