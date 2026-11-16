@@ -212,8 +212,8 @@ it("keeps a transcribed call's recording for the owner only and names it in meet
   const [recording] = shown.attachments as { kind: string; mime: string; local_path: string }[]
   expect(recording).toMatchObject({ kind: "recording", mime: "audio/mpeg" })
   const path = recording?.local_path ?? ""
-  expect(path).toMatch(/recordings\/work\/\d+\.mp3$/)
-  expect(statSync(path).mode & 0o777).toBe(0o600)
+  expect(path).toMatch(/recordings[\\/]work[\\/]\d+\.mp3$/)
+  if (process.platform !== "win32") expect(statSync(path).mode & 0o777).toBe(0o600)
 
   rmSync(path)
   expect((await ran(["work", "config", "set", "keep_recordings", "false", "--json"])).code).toBe(0)
