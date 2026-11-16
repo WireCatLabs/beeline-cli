@@ -276,7 +276,7 @@ export const meetingsMount = () => {
         const moved = await rekeyOldClients(store)
         if (moved.renamed + moved.merged + moved.refused > 0)
           run.streams?.diagnostic(
-            `moved old caller ids to their E.164 numbers: ${moved.renamed} renamed, ${moved.merged} merged` +
+            `moved old caller ids to their current ids: ${moved.renamed} renamed, ${moved.merged} merged` +
               (moved.refused ? `, ${moved.refused} left as they were (they could not merge)` : ""),
           )
       }

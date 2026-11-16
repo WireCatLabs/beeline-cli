@@ -90,16 +90,18 @@ const openEmptyStore = async (env: NodeJS.ProcessEnv, profile: string) => {
 }
 
 /**
- * A caller's id as an older build wrote it, moved to the `phone:+7…` id it gets now. Development builds of 0.1.0 first wrote the 10-digit
- * national number Beeline sends (`phone:9000000009`); then, for a day, that number behind a `+` (`phone:+9000000009`).
- * An id `clientPhone` cannot read, such as an extension, stays.
+ * A caller's id as an older build wrote it, moved to the id it gets now. Development builds of 0.1.0 first wrote the
+ * 10-digit national number Beeline sends (`phone:9000000009`); then, for a day, that number behind a `+`
+ * (`phone:+9000000009`). Those move to `phone:+7…`. A number `clientPhone` cannot read, such as an extension, was
+ * `phone:<raw>` up to 0.2.0 and moves to `number:<raw>`. An E.164 id stays.
  */
 export const oldClientRekeys = (ids: readonly string[]): IdentityRekey[] =>
-  ids.flatMap((from) => {
-    const raw = /^phone:(?:\+(?=\d{10}$))?(\d+)$/.exec(from)?.[1]
-    const phone = raw === undefined ? undefined : clientPhone(raw)
-    const to = phone && `phone:${phone}`
-    return phone && to && to !== from ? [{ from, to, phone }] : []
+  ids.flatMap((from): IdentityRekey[] => {
+    const digits = /^phone:(?:\+(?=\d{10}$))?(\d+)$/.exec(from)?.[1]
+    const phone = digits === undefined ? undefined : clientPhone(digits)
+    if (phone) return `phone:${phone}` === from ? [] : [{ from, to: `phone:${phone}`, phone }]
+    if (!from.startsWith("phone:") || /^phone:\+[1-9]\d{6,14}$/.test(from)) return []
+    return [{ from, to: `number:${digits ?? from.slice("phone:".length)}` }]
   })
 
 export interface ClientRekeys {
@@ -108,7 +110,7 @@ export interface ClientRekeys {
   refused: number
 }
 
-/** Moves every profile's old caller ids to E.164 in passes short enough for other commands to get the write lock. */
+/** Moves every profile's old caller ids to their current ids in passes short enough for other commands to get the write lock. */
 export const rekeyOldClients = async (store: MessageStore): Promise<ClientRekeys> => {
   const ids = (await store.people.people(PROVIDER_NAME)).all().map((one) => String(one.id))
   let rest = oldClientRekeys(ids)

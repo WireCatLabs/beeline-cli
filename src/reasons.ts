@@ -9,6 +9,11 @@ const OWN: [reason: string, code: string, message: string][] = [
   ["token.refused", "authentication_error", "Beeline refused the API token"],
   ["recording.empty", "provider_error", "Beeline sent an empty recording"],
   ["recording.too-large", "validation_error", "the recording is larger than 256 MB"],
+  [
+    "recording.too-long",
+    "validation_error",
+    "the call is longer than 60 minutes, the longest meetings transcribe takes",
+  ],
   ["recording.not-stereo", "invalid_response", "the recording is not two separate channels"],
   ["model.not-downloaded", "not_found", "the speech model is not on this computer; download it first"],
   ["transcript.missing", "not_found", "the call has no transcript yet; meetings transcribe makes one"],

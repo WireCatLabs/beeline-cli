@@ -93,7 +93,8 @@ export const transcribeCalls = async (
       report.failed.push({
         meeting: call.id,
         reason: String(reason),
-        message: error instanceof Error ? error.message : "the call could not be transcribed",
+        // Only beeline's and cli-core's own errors are worded for the answer; any other may carry a path or a value.
+        message: isCliError(error) ? error.message : "the call could not be transcribed",
       })
       options.progress?.(`${index + 1}/${Math.min(pending.length, options.limit)} meeting ${call.id} failed: ${reason}`)
     }

@@ -67,7 +67,8 @@ Owner, 2026-11-13 (NEED-2600 A). The client participant carries its number as `p
 `phone:<E.164>`. Beeline gives the client's 10-digit national number (`9XXXXXXXXX`, counted in the owner's store on
 2026-11-13), so `clientPhone` in `src/call-source.ts` reads it in Russia's plan: `e164Of` leaves a national number's
 country to the source, and Beeline is a Russian PBX. A number that plan does not read (an extension, a foreign number)
-keeps its raw digits in the id and gets no phone.
+gets no phone, and its identity is `number:<raw>`, the key cli-core's call reader expects for a number that is no phone
+number (owner, 2026-11-16, NEED-2620 A). Up to 0.2.0 it was `phone:<raw>`; `meetings sync` moves those ids too.
 
 A store written by an unpublished build before this fix has `phone:<national>` ids, and a build of one day
 `phone:+<national>` ones (the owner's: 1626 old ids on 2026-11-13). Each `meetings sync` first moves them to the id

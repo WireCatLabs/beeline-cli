@@ -6,7 +6,7 @@ export const CHANGELOG = {
   ids: JOURNAL_IDS,
 }
 
-const USER_PAGES = /^(README|SECURITY|CHANGELOG)\.md$|^kit\/README\.md$|^docs\/[^/]+\.md$/
+const USER_PAGES = /^(README|README\.ru|SECURITY|CHANGELOG)\.md$|^kit\/README\.md$|^docs\/[^/]+\.md$/
 
 export const docsRules = (root: string): DocsRules => ({
   files: markdownFiles(root, new Set(["node_modules", "dist", "coverage", ".git"])),
