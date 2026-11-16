@@ -2,6 +2,30 @@
 
 Notable changes to `@wirecat/beeline-cli`. One section per version, newest first.
 
+## 0.3.0 — 16.11.2026
+
+### Added
+
+- **WireCat Desktop opens beeline's calls.** The manifest now names how a call opens (cli-base 0.104.0,
+  `meetingsProvider`): a client's call on Desktop's Clients page and in Meetings opens in beeline, with its
+  people and transcript. It needs the Desktop that reads it (0.6.9 or later); Desktop 0.6.8 refuses this manifest.
+  A sync is now counted as calls (`syncs: "calls"`), not as records.
+- **`meetings download <call> --output <file>`** saves one call's recording from Beeline to a new file, to listen to
+  it. It never writes over a file that exists, and the file is readable only by you. Its permission key is
+  `meetings.download`.
+- **`meetings transcribe` keeps each call's recording on this computer**, readable only by you, and `meetings show`
+  names its file, so WireCat Desktop plays the call. `config set keep_recordings false` on a profile turns it off: the
+  recording is then dropped once transcribed, as before.
+
+### Fixed
+
+- **A client number that is no phone number, such as an extension, is stored as `number:<number>`**, the key the
+  other WireCat tools read calls by, instead of `phone:<number>`. `meetings sync` moves the ones an older version
+  stored, merging each into the client already stored under its new key, and says how many it moved.
+- **A failed call in `meetings transcribe` no longer repeats an unexpected error's own text**, which could carry a
+  path; it says the call could not be transcribed.
+- **The MCP server no longer warns about call comments and departments**, which beeline never stores.
+
 ## 0.2.0 — 16.11.2026
 
 ### Added
