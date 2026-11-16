@@ -48,8 +48,8 @@ export const downloadCommand = (deps: DownloadDeps): Command => {
   const command = writesNewFileOnlyWith(answerEntity(base, "call_recording", SAVED), "output")
     .summary("save one call's recording from Beeline to a new file")
     .description(
-      "download the recording of a stored call from Beeline and write it to a new file; Beeline keeps the " +
-        "recording, this computer keeps only the transcript",
+      "download the recording of a stored call from Beeline and write it to a new file of your choice; " +
+        "meetings transcribe already keeps a copy for WireCat Desktop unless keep_recordings is false",
     )
     .argument("<meeting>", "stored call id, or the ref meetings list prints (meeting:1/375)", deps.meetingId)
   return command.action(async function (this: Command, id: number, opts: { output: string }) {

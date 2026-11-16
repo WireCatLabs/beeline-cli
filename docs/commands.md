@@ -312,7 +312,7 @@ beeline meetings transcribe [query] [options]
 
 ### `beeline meetings download`
 
-download the recording of a stored call from Beeline and write it to a new file; Beeline keeps the recording, this computer keeps only the transcript
+download the recording of a stored call from Beeline and write it to a new file of your choice; meetings transcribe already keeps a copy for WireCat Desktop unless keep_recordings is false
 
 **Changes something on this computer only.**
 
