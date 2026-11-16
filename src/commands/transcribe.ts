@@ -81,7 +81,7 @@ export const transcribeCommand = (deps: TranscribeDeps): Command => {
         query: defineQuery(MEETING_QUERY),
         examples: [
           `${IDENTITY.command} work meetings transcribe --max-meetings 20 --json`,
-          `${IDENTITY.command} work meetings transcribe duration_ms>=60000 --json`,
+          `${IDENTITY.command} work meetings transcribe "duration_ms>=60000" --json`,
           `${IDENTITY.command} work meetings transcribe id:4494 --replace --json`,
         ],
       }),

@@ -12,6 +12,11 @@ Notable changes to `@wirecat/beeline-cli`. One section per version, newest first
 - **A `search meetings` hit may carry `by`, `score` and `passage`**, the fields of a search by meaning, so beeline's
   hits keep the same shape as every other meetings tool.
 
+### Fixed
+
+- **`meetings transcribe --help` quotes its `duration_ms>=60000` example**, so a shell no longer reads `>` as a
+  redirect to a file named `=60000`.
+
 ## 0.1.0 — 02.11.2026
 
 ### Added
