@@ -2,8 +2,8 @@ import { mkdtempSync, rmSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { isCliError } from "@wirecat/cli-base"
-import type { MessageStore } from "@wirecat/cli-core/store"
-import { PROVIDER_NAME } from "./call-source.js"
+import type { IdentityRekey, MessageStore } from "@wirecat/cli-core/store"
+import { clientPhone, PROVIDER_NAME } from "./call-source.js"
 import { IDENTITY } from "./identity.js"
 
 export const PROVIDER = {
@@ -87,4 +87,39 @@ const openEmptyStore = async (env: NodeJS.ProcessEnv, profile: string) => {
     removing()
     throw error
   }
+}
+
+/**
+ * A caller's id as an older build wrote it, moved to the `phone:+7…` id it gets now. Development builds of 0.1.0 first wrote the 10-digit
+ * national number Beeline sends (`phone:9000000009`); then, for a day, that number behind a `+` (`phone:+9000000009`).
+ * An id `clientPhone` cannot read, such as an extension, stays.
+ */
+export const oldClientRekeys = (ids: readonly string[]): IdentityRekey[] =>
+  ids.flatMap((from) => {
+    const raw = /^phone:(?:\+(?=\d{10}$))?(\d+)$/.exec(from)?.[1]
+    const phone = raw === undefined ? undefined : clientPhone(raw)
+    const to = phone && `phone:${phone}`
+    return phone && to && to !== from ? [{ from, to, phone }] : []
+  })
+
+export interface ClientRekeys {
+  renamed: number
+  merged: number
+  refused: number
+}
+
+/** Moves every profile's old caller ids to E.164 in passes short enough for other commands to get the write lock. */
+export const rekeyOldClients = async (store: MessageStore): Promise<ClientRekeys> => {
+  const ids = (await store.people.people(PROVIDER_NAME)).all().map((one) => String(one.id))
+  let rest = oldClientRekeys(ids)
+  const total = { renamed: 0, merged: 0, refused: 0 }
+  while (rest.length > 0) {
+    const pass = await store.people.rekeyIdentities(PROVIDER_NAME, rest, { by: IDENTITY.command })
+    total.renamed += pass.renamed
+    total.merged += pass.merged
+    total.refused += pass.refused.length
+    if (pass.taken === 0) break
+    rest = rest.slice(pass.taken)
+  }
+  return total
 }

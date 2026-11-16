@@ -153,7 +153,7 @@ beeline meetings list [query] [options]
 | `--limit <n>` | meetings per page; the profile's defaults.limit when absent. |
 | `--page <n>` | which page, starting at 1. |
 
-**Returns:** meeting — ref, id, provider_id, provider, account, title, url, started_at, and 11 more; every field: beeline commands info meetings list
+**Returns:** meeting — ref, id, provider_id, provider, account, title, url, started_at, and 12 more; every field: beeline commands info meetings list
 
 **Next usually:** `beeline meetings show <meeting>`, `beeline meetings transcript <meeting>`, `beeline meetings export <meeting>`
 
@@ -175,7 +175,7 @@ beeline meetings show <meeting> [options]
 |---|---|
 | `--backend <archive\|server\|both>` | where to read: the store (archive), the service (server), or both, kept in the store (default: both). |
 
-**Returns:** meeting details — ref, id, provider_id, provider, account, title, url, started_at, and 20 more; every field: beeline commands info meetings show
+**Returns:** meeting details — ref, id, provider_id, provider, account, title, url, started_at, and 21 more; every field: beeline commands info meetings show
 
 **Next usually:** `beeline meetings transcript <meeting>`, `beeline meetings export <meeting>`
 
