@@ -332,7 +332,7 @@ it("meetings export prints under the read-only lock and writes a file only in th
   expect(JSON.parse(outside.err).error.reason).toBe("read-only.output-outside")
   expect(lockedWrite.code, lockedWrite.err).toBe(0)
   expect(files.map((file) => [statSync(file).mtimeMs, statSync(file).size])).toEqual(before)
-  expect(statSync(output).mode & 0o777).toBe(0o600)
+  if (process.platform !== "win32") expect(statSync(output).mode & 0o777).toBe(0o600)
 
   const taken = join(tmpdir(), "taken.md")
   writeFileSync(taken, "kept")
