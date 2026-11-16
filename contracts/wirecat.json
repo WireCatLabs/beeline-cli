@@ -190,6 +190,19 @@
     },
     {
       "path": [
+        "meetings",
+        "download"
+      ],
+      "summary": "save one call's recording from Beeline to a new file",
+      "effects": {
+        "remote": "read",
+        "local": "write"
+      },
+      "permission": "meetings.download",
+      "entity": "call_recording"
+    },
+    {
+      "path": [
         "events",
         "list"
       ],
@@ -719,7 +732,7 @@
       ],
       "last": null,
       "lastShape": "runs",
-      "what": "recorded calls",
+      "what": "calls",
       "note": null
     },
     "storeInfo": null,
@@ -734,6 +747,25 @@
       "app": "beeline-cli",
       "env": "BEELINE"
     },
-    "settings": null
+    "settings": null,
+    "meetings": {
+      "provider": "beeline",
+      "show": [
+        "{profile}",
+        "meetings",
+        "show",
+        "{id}",
+        "--no-record",
+        "--json"
+      ],
+      "transcript": [
+        "{profile}",
+        "meetings",
+        "transcript",
+        "{id}",
+        "--no-record",
+        "--json"
+      ]
+    }
   }
 }

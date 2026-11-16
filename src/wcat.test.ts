@@ -25,6 +25,13 @@ describe("contracts/wirecat.json", () => {
     const permissionOf = (path: string) =>
       manifest.commands.find((command) => command.path.join(" ") === path)?.permission
     expect(permissionOf("meetings sync")).toBe("meetings.sync")
+    expect(permissionOf("meetings download")).toBe("meetings.download")
+    expect(manifest.desktop.meetings).toEqual({
+      provider: "beeline",
+      show: ["{profile}", "meetings", "show", "{id}", "--no-record", "--json"],
+      transcript: ["{profile}", "meetings", "transcript", "{id}", "--no-record", "--json"],
+    })
+    expect(manifest.desktop.sync?.what).toBe("calls")
   })
 })
 

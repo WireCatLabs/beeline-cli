@@ -8,8 +8,8 @@ What WireCat CLIs share — the keyring, permissions, MCP, run records and what 
 - `beeline` talks to one service: the Beeline Cloud PBX API at `cloudpbx.beeline.ru`, over HTTPS.
 - It only reads: the list of recorded calls and each call's recording. The API can also delete recordings and place
   calls. `beeline` has no command that does either.
-- `meetings sync`, `meetings transcribe`, `session start` and `session status --check` are the only commands that
-  ask Beeline. `--offline` refuses them before any request. `models download` fetches a speech model from its own
+- `meetings sync`, `meetings transcribe`, `meetings download`, `session start` and `session status --check` are the
+  only commands that ask Beeline. `--offline` refuses them before any request. `models download` fetches a speech model from its own
   host, and sends nothing of yours.
 
 ## The API token
@@ -26,8 +26,9 @@ What WireCat CLIs share — the keyring, permissions, MCP, run records and what 
 
 ## Recordings and speech
 
-- A recording is downloaded into memory, transcribed and dropped. It is never written to disk. The store keeps only
-  its size, its length and a hash, so a second run can tell the same recording.
+- A recording is downloaded into memory, transcribed and dropped. The store keeps only its size, its length and a
+  hash, so a second run can tell the same recording. Only `meetings download --output <file>` writes one to disk: to
+  a new file only you can read, never over a file that exists.
 - Speech is recognized on this computer, by a model that `beeline models download` fetches once into the folder every
   WireCat CLI shares. The recording and its transcript are sent to no speech service. A cloud option, such as OpenAI,
   is planned and not offered yet.

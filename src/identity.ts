@@ -23,7 +23,7 @@ export const DESKTOP: ManifestIdentity & { hosts: readonly string[] } = {
   ...IDENTITY,
   docs: "https://github.com/WireCatLabs/beeline-cli#readme",
   tagline: "Beeline Cloud PBX calls, transcribed on your computer",
-  syncs: "recorded calls",
+  syncs: "calls",
   signIn: {
     gives: "Lets your agent read the recorded calls of your Beeline Cloud PBX, transcribed on this computer.",
     asks: "A Beeline Cloud PBX API token, from the Beeline cabinet: Услуги → Интеграция по API.",
