@@ -3,6 +3,7 @@ import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { afterEach, beforeEach, expect, it } from "vitest"
 import { run } from "./program.js"
+import { strictBeeline } from "./testing/fake-beeline.js"
 import { record } from "./testing/records.js"
 
 const asked: string[] = []
@@ -20,7 +21,7 @@ const ran = async (argv: string[]) => {
   const code = await run(argv, {
     streams: { data: (text) => out.push(text), diagnostic: (text) => err.push(text) },
     tty: false,
-    fetch: beeline,
+    fetch: strictBeeline(beeline),
   })
   return { code, out: out.join("\n"), err: err.join("\n") }
 }

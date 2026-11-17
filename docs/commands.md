@@ -306,7 +306,7 @@ beeline meetings transcribe [query] [options]
 | `--max-meetings <n>` | at most this many calls transcribed, newest first. Default: `20`. |
 | `--model <model>` | local speech model. Default: `gigaam-v3`. |
 
-**Returns:** call transcription report — transcribed, audio_seconds, failed, remaining, stopped; every field: beeline commands info meetings transcribe
+**Returns:** call transcription report — transcribed, audio_ms, failed, remaining, stopped; every field: beeline commands info meetings transcribe
 
 **Example:** `beeline work meetings transcribe --max-meetings 20 --json`, `beeline work meetings transcribe "duration_ms>=60000" --json`, `beeline work meetings transcribe id:4494 --replace --json`
 

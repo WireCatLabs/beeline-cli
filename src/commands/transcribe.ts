@@ -67,8 +67,8 @@ export const callQuery = (text: string) => {
 
 const REPORT = v.strictObject({
   transcribed: v.number(),
-  audio_seconds: v.number(),
-  failed: v.array(v.strictObject({ meeting: v.number(), reason: v.string(), message: v.string() })),
+  audio_ms: v.number(),
+  failed: v.array(v.strictObject({ meeting: v.number(), ref: v.string(), reason: v.string(), message: v.string() })),
   remaining: v.number(),
   stopped: v.boolean(),
 })
@@ -103,8 +103,11 @@ export const transcribeCommand = (deps: TranscribeDeps): Command => {
     .option("--replace", "transcribe calls that already have a transcript too, replacing it")
     .option("--max-meetings <n>", "at most this many calls transcribed, newest first", count("--max-meetings"), 20)
     .option("--model <model>", "local speech model", DEFAULT_SPEECH_MODEL)
-  return command.action(async function (this: Command, words: string[], opts: Record<string, unknown>) {
-    const { replace, maxMeetings: limit, model } = opts as { replace?: boolean; maxMeetings: number; model: string }
+  return command.action(async function (
+    this: Command,
+    words: string[],
+    { replace, maxMeetings: limit, model }: { replace?: boolean; maxMeetings: number; model: string },
+  ) {
     const context = baseContext(this, configuration.resolveSettings)
     refuseOffline(this, "Beeline")
     const query = callQuery(words.join(" ").trim() || DEFAULT_QUERY)

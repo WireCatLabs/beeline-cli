@@ -17,12 +17,12 @@
 # 5. Records the check in docs/dev/live-checks.txt, which bin/release reads.
 # 6. Opens the release pull request with the version and the record in it, waits for its checks and squash merges it.
 #    The record rides in the release commit, so no second pull request is needed.
-# 7. Runs bin/release --local, which checks again and publishes from this computer.
+# 7. Runs bin/release, which checks again and starts the release workflow: GitHub Actions publishes to npm through
+#    trusted publishing, tags the version and makes the GitHub release. No npm token is needed; gh must be signed in.
 #
 # The Beeline token is BEELINE_TOKEN when it is set, else the keyring entry `session start` keeps (service
 # beeline-cli, username token:<profile>). It reaches only the beeline runs, through their environment; it is never
-# printed. For the npm token, bin/release reads NPM_TOKEN, or the keyring when NPM_KEYRING_ACCOUNT names its account,
-# or your npm login.
+# printed.
 
 require "fileutils"
 require "json"
@@ -212,7 +212,7 @@ def live_check(profile)
       answer = beeline(env, profile, "meetings", "transcribe", "--max-meetings", "1")
       item = answer ? answer.fetch("item", {}) : {}
       errors = (item["failed"] || []).map { |one| one["reason"] }
-      puts "#{item['transcribed'].to_i} transcribed, #{item['audio_seconds'].to_i} s of audio, " \
+      puts "#{item['transcribed'].to_i} transcribed, #{(item['audio_ms'].to_i / 1000.0).round} s of audio, " \
            "#{item['remaining'].to_i} remaining, failed: #{errors.empty? ? 'none' : errors.join(', ')}"
       failed = true unless answer && item["transcribed"].to_i >= 1 && errors.empty?
 
@@ -236,8 +236,8 @@ def release_body(version, record)
     ## Conformance
 
     - **Live check** (read-only, `bin/owner-release`, throwaway store): `#{record}`
-    - **`pnpm release:check`** runs in `bin/release --local` on main before #{version} is published; this pull
-      request's own checks run the CI validation.
+    - **`pnpm release:check`** runs in `bin/release` on main before #{version} is published; this pull request's
+      own checks run the CI validation, and the release workflow publishes it from GitHub Actions.
     - **Fresh audit and slice reviews:** in the pull requests merged since the last release.
   BODY
 end
@@ -255,7 +255,7 @@ def merge(pr, base)
   run! "gh", "pr", "checks", pr, "--watch", "--required", "--fail-fast"
   run! "git", "fetch", "origin"
   if output!("git", "rev-parse", "origin/main") != base
-    abort "main advanced while #{pr} was checked; review the version against it, then merge #{pr} and run bin/release --local"
+    abort "main advanced while #{pr} was checked; review the version against it, then merge #{pr} and run bin/release"
   end
   state = nil
   180.times do
@@ -319,7 +319,7 @@ def main(argv)
   merge(pr, base)
 
   step "publishing #{version}"
-  run! RELEASE, "--local"
+  run! RELEASE
 end
 
 main(ARGV) if $PROGRAM_NAME == __FILE__

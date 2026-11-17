@@ -5,6 +5,7 @@ import { dialogue } from "./call-transcription.js"
 import { callQuery, DEFAULT_QUERY } from "./commands/transcribe.js"
 import { run } from "./program.js"
 import { openBeelineStore, PROVIDER } from "./store.js"
+import { strictBeeline } from "./testing/fake-beeline.js"
 import { record } from "./testing/records.js"
 import { transcribeCalls } from "./transcribe-calls.js"
 
@@ -57,14 +58,15 @@ it("transcribes calls without a transcript, reports a failed one and leaves the 
     (
       await run(["work", "meetings", "sync", "--since-time", "2026-10-01T00:00:00Z"], {
         tty: false,
-        fetch: async () =>
+        fetch: strictBeeline(async () =>
           Response.json([
             record(1, { duration: 3_000 }),
             record(2, { duration: 10_000 }),
             record(3, { duration: 10_000 }),
             record(4, { duration: 10_000 }),
           ]),
-      } as Parameters<typeof run>[1])
+        ),
+      })
     ).valueOf(),
   ).toBe(0)
 
@@ -109,7 +111,12 @@ it("transcribes calls without a transcript, reports a failed one and leaves the 
     const second = await transcribeCalls(ports, { query: callQuery(DEFAULT_QUERY), limit: 10 })
     expect(second.transcribed).toBe(1)
     expect(second.failed).toEqual([
-      { meeting: expect.any(Number), reason: "beeline.down", message: "Beeline answered 500" },
+      {
+        meeting: expect.any(Number),
+        ref: expect.stringMatching(/^meeting:\d+\/\d+$/),
+        reason: "beeline.down",
+        message: "the call could not be transcribed",
+      },
     ])
 
     const calls = await store.meetings.meetings({ accountId })
