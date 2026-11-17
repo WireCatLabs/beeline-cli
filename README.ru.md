@@ -4,6 +4,11 @@
 каждый звонок как диалог менеджера и клиента. Записи и расшифровки никуда не отправляются. Подключите ИИ-агента, и он
 найдёт нужный разговор и перескажет его.
 
+[Документация](https://wirecat.dev/ru/docs/beeline) ·
+[Установка](https://github.com/WireCatLabs/beeline-cli/blob/main/docs/installation.md) ·
+[Использование](https://github.com/WireCatLabs/beeline-cli/blob/main/docs/usage.md) ·
+[Чат в Telegram](https://t.me/wirecatdev)
+
 Полное описание на английском: [README.md](README.md).
 
 ## Что нужно
