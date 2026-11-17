@@ -4,6 +4,11 @@ Your company's recorded calls from Beeline Cloud PBX (Облачная АТС Б
 offline, and ready for Claude Code, Codex, Gemini CLI or any agent — within limits you set. По-русски:
 [README.ru.md](README.ru.md).
 
+[Docs](https://wirecat.dev/en/docs/beeline) ·
+[Install](https://github.com/WireCatLabs/beeline-cli/blob/main/docs/installation.md) ·
+[Usage](https://github.com/WireCatLabs/beeline-cli/blob/main/docs/usage.md) ·
+[Telegram](https://t.me/wirecatdev)
+
 `beeline` copies the list of recorded calls from Beeline into the local [WireCat](https://wirecat.dev) store, one
 meeting per call, with the manager and the client as its two people. `meetings transcribe` downloads each recording
 and turns it into a dialogue between the manager and the client, with a speech model that runs on this computer. Then
