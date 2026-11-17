@@ -1,6 +1,7 @@
 import { syncAfterInstallCases } from "@wirecat/cli-core/testing"
 import { describe, it } from "vitest"
 import { run } from "./program.js"
+import { strictBeeline } from "./testing/fake-beeline.js"
 import { record } from "./testing/records.js"
 
 describe("sync runs right after install, whatever the shared WireCat config holds", () => {
@@ -12,7 +13,7 @@ describe("sync runs right after install, whatever the shared WireCat config hold
       const code = await run(argv, {
         streams: { data: () => {}, diagnostic: (text) => err.push(text) },
         tty: false,
-        fetch: async () => Response.json([record(1)]),
+        fetch: strictBeeline(async () => Response.json([record(1)])),
         env: { ...process.env, BEELINE_TOKEN: "test-token", ...env },
       })
       return { code, err: err.join("\n") }

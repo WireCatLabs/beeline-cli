@@ -1,18 +1,18 @@
 import { DatabaseSync } from "node:sqlite"
-import type { FetchLike } from "@wirecat/cli-base/http"
 import { storePath } from "@wirecat/cli-core/store"
 import { afterEach, expect, it } from "vitest"
 import { run } from "./program.js"
 import { oldClientRekeys, openBeelineStore, rekeyOldClients } from "./store.js"
+import { strictBeeline } from "./testing/fake-beeline.js"
 import { record } from "./testing/records.js"
 
-const ran = async (argv: string[], fetch: FetchLike) => {
+const ran = async (argv: string[], fetch: (url: URL) => Promise<Response>) => {
   const out: string[] = []
   const err: string[] = []
   const code = await run(argv, {
     streams: { data: (text) => out.push(text), diagnostic: (text) => err.push(text) },
     tty: false,
-    fetch,
+    fetch: strictBeeline(fetch),
   })
   return { code, out: out.join("\n"), err: err.join("\n") }
 }

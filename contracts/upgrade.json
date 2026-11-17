@@ -3,7 +3,7 @@
   "args": ["../dist/bin/beeline.js"],
   "previous": {
     "entry": "./previous/node_modules/@wirecat/previous-cli/dist/bin/beeline.js",
-    "version": "0.2.0"
+    "version": "0.3.0"
   },
   "canaries": ["wirecat-synthetic-manager-canary"],
   "cases": [

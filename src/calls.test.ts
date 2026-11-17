@@ -9,6 +9,7 @@ import { afterEach, expect, it, vi } from "vitest"
 import { clientPhone } from "./call-source.js"
 import { run } from "./program.js"
 import { openBeelineStore } from "./store.js"
+import { strictBeeline } from "./testing/fake-beeline.js"
 import { record } from "./testing/records.js"
 
 let answering: FetchLike | undefined
@@ -26,7 +27,7 @@ const ran = async (argv: string[], options: Record<string, unknown> = {}) => {
 }
 
 const beeline = (answer: (url: URL) => Response) => {
-  const fetch = vi.fn(async (url: string | URL | Request) => answer(new URL(String(url))))
+  const fetch = vi.fn(strictBeeline(answer))
   answering = fetch
   return fetch
 }
@@ -75,6 +76,27 @@ it("syncs Beeline's call records into the store as meetings with a manager and a
   expect(people.out).not.toContain("70000000001@example.test")
 })
 
+it("a read or a search on a profile that never synced answers empty and saves no account", async () => {
+  process.env.BEELINE_TOKEN = "test-token"
+  beeline(() => Response.json([record(1)]))
+  expect((await ran(["work", "meetings", "sync", "--since-time", "2026-10-01T00:00:00Z"])).code).toBe(0)
+
+  const listed = await ran(["nobody", "meetings", "list", "--json"])
+  expect(listed.code, listed.err).toBe(0)
+  expect(JSON.parse(listed.out).items).toEqual([])
+  const found = await ran(["nobody", "search", "meetings", "Manager", "--json"])
+  expect(found.code, found.err).toBe(0)
+
+  const store = await openBeelineStore(process.env, { readOnly: true })
+  try {
+    await expect(store.accounts.storedAccount({ provider: "beeline", account: "nobody" })).rejects.toThrow(
+      "no beeline account",
+    )
+  } finally {
+    await store.close()
+  }
+})
+
 it("each sync asks again for the three hours before the last one began, so a call in progress then is not lost", async () => {
   process.env.BEELINE_TOKEN = "test-token"
   vi.useFakeTimers({ toFake: ["Date"] })
@@ -92,7 +114,7 @@ it("each sync asks again for the three hours before the last one began, so a cal
 
   const asked = new URL(fetch.mock.calls[0]?.[0] as string)
   expect(asked.searchParams.get("dateFrom")).toBe(new Date(lastSync - 3 * 3_600_000).toISOString())
-  const listed = JSON.parse((await ran(["work", "meetings", "list", "--json"])).out).items as { started_at: string }[]
+  const listed: { started_at: string }[] = JSON.parse((await ran(["work", "meetings", "list", "--json"])).out).items
   expect(listed.filter(({ started_at }) => started_at === new Date(inProgress.date).toISOString())).toHaveLength(1)
 })
 
@@ -206,7 +228,11 @@ it("keeps the reasons a caller branches on in the error", async () => {
   process.env.BEELINE_TOKEN = "test-token"
   beeline(() => new Response("{}", { status: 403 }))
   const refused = await ran(["work", "meetings", "sync", "--json"])
-  expect(JSON.parse(refused.err).error).toMatchObject({ code: "authentication_error", reason: "token.refused" })
+  expect(JSON.parse(refused.err).error).toMatchObject({
+    code: "authentication_error",
+    reason: "token.refused",
+    message: expect.stringContaining("beeline work session start"),
+  })
 
   beeline(() => Response.json({ errorCode: "UserNotFound" }, { status: 400 }))
   const failed = await ran(["work", "meetings", "sync", "--json"])
@@ -410,7 +436,7 @@ const clientOf = async (number: string) => {
   const shown = await ran(["work", "meetings", "show", String(call?.id), "--json"])
   expect(shown.code, shown.err).toBe(0)
   expect(JSON.parse(shown.out)).toMatchObject({ missing: [{ field: "server" }], meta: { run_id: expect.any(String) } })
-  const { participants } = JSON.parse(shown.out).item as { participants: { role: string; person: unknown }[] }
+  const { participants }: { participants: { role: string; person: unknown }[] } = JSON.parse(shown.out).item
   return participants.find((one) => one.role === "client")
 }
 

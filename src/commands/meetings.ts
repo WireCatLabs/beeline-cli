@@ -6,6 +6,7 @@ import {
   fetchesOnly,
   hasSharedContract,
   inCommandRun,
+  isBody,
   itemOf,
   listOf,
   NO_EFFECTS,
@@ -124,13 +125,13 @@ const goOn = (command: string, step: string, why: string, safe: boolean) => ({
 /** cli-core's reads answer `{ items, page, limit, hasMore, meta? }` or one value; beeline prints both in its envelope. */
 const bodyOf = (command: Command, value: unknown) => {
   // cli-core 0.498 writes `meetings list` as a finished list, its `page` an object with the next step.
-  if (isRecord(value) && Array.isArray(value.items) && isRecord(value.page))
-    return value as Parameters<typeof renderAnswer>[2]
+  if (isRecord(value) && Array.isArray(value.items) && isRecord(value.page) && isBody(value)) return value
   if (isRecord(value) && Array.isArray(value.items) && Object.keys(value).every((key) => LIST_KEYS.has(key))) {
     const { next, ...list } = listOf(pathOf(command).join(" "), {
-      items: snakeKeys(value.items) as unknown[],
+      items: value.items.map(snakeKeys),
       limit: Math.max(1, typeof value.limit === "number" ? value.limit : value.items.length),
       has_more: value.hasMore === true,
+      // snakeKeys is typed `unknown`; the keys are cli-core's own meta, only renamed.
       ...(isRecord(value.meta) ? { meta: snakeKeys(value.meta) as Parameters<typeof listOf>[1]["meta"] } : {}),
     })
     const kept = next?.filter((one) => one.step !== "page.next") ?? []
@@ -189,6 +190,7 @@ export const meetingsMount = () => {
       const meetings = holder.commands.find((group) => group.name() === "meetings")
       if (meetings)
         overrideSharedContract(meetings, "Beeline gives no summaries and no transcript files to import.", (group) => {
+          // commander types the list read-only; removing a subcommand has no other API.
           const mounted = group.commands as Command[]
           for (const one of mounted.filter((leaf) => UNUSED.has(leaf.name()))) mounted.splice(mounted.indexOf(one), 1)
         })
@@ -203,7 +205,7 @@ export const meetingsMount = () => {
         output: (body) => {
           const at = action
           if (!at) throw new CliError("configuration_error", "no command is running")
-          answers.push(() => renderAnswer(at, outputFor(at), body as Parameters<typeof renderAnswer>[2]))
+          answers.push(() => renderAnswer(at, outputFor(at), bodyOf(at, body)))
         },
       })
       meetings?.addCommand(
@@ -277,7 +279,7 @@ export const meetingsMount = () => {
       // brings the transcripts' word index up to date, which writes, so it opens the store for writing unless locked.
       const indexes = pathOf(at).join(" ") === "search meetings" && readOnlyLockOf(IDENTITY, env) === undefined
       const reads = !indexes && (metaOf(at).effects?.local === "read" || (readsOverMcp(at) && !fetchesOnly(at)))
-      const { store, accountId } = await openProfileStore(env, profile, reads)
+      const { store, accountId } = await openProfileStore(env, profile, reads, !reads && !indexes)
       let closed: Promise<void> | undefined
       const close = () => (closed ??= store.close())
       // Still tracked: a command that fails never reaches postAction.
@@ -296,7 +298,7 @@ export const meetingsMount = () => {
         if (api) return api
         refuseOffline(at, "Beeline")
         const tokens = new ProfileTokenStore({ app: IDENTITY, env, ...(keyring ? { keyring } : {}) })
-        api = beelineFor(at, tokens.need(profile))
+        api = beelineFor(at, tokens.need(profile), profile)
         return api
       }
       opened = {

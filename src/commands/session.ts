@@ -69,7 +69,7 @@ const startCommand = () =>
       refuseOffline(this, "Beeline")
       const token = (await readSecret("Beeline API token: ", secretInputOf(this))).trim()
       if (!token) throw new CliError("validation_error", "no token was given")
-      await run(() => beelineFor(this, token).records())
+      await run(() => beelineFor(this, token, profile).records())
       const storedIn = tokens.write(profile, token, storage)
       // Beeline names no user behind a token; the store keys the account by the profile, so this does too.
       rememberAccount(IDENTITY, profile, profile, env)
@@ -97,7 +97,7 @@ const statusCommand = () =>
         verified: false,
       }
       if (!args.check || !stored) return answer(this, status)
-      await run(() => beelineFor(this, stored.secret).records())
+      await run(() => beelineFor(this, stored.secret, profile).records())
       answer(this, { ...status, verified: true })
     })
 

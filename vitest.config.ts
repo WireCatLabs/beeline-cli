@@ -20,7 +20,7 @@ export default defineConfig({
       ],
       reporter: ["text-summary", "json-summary"],
       thresholds: {
-        "src/**": { lines: 96, statements: 94, functions: 93, branches: 82, perFile: { lines: 50 } },
+        "src/**": { lines: 96, statements: 94, functions: 94, branches: 83, perFile: { lines: 50 } },
       },
     },
   },

@@ -8,7 +8,7 @@ description: Release this CLI — run release:check, check the changelog fragmen
 The rules are the handbook's [Releases page](../../../../node_modules/@wirecat/cli-base/docs/standards/releases.md)
 (`WC-REL-<n>`), which wins over this skill. An agent prepares the release: steps 1 to 6, in the pull requests it
 merges. The owner publishes beeline by hand: `bin/owner-release <profile>` raises the version, runs the live check,
-merges the release pull request and runs `bin/release --local` (steps 7 to 10). An agent never raises the version or
+merges the release pull request and runs `bin/release` (steps 7 to 10). An agent never raises the version or
 runs `bin/release`. Release a batch of changes, not every merge.
 
 1. **What changed.** In a worktree off `origin/main`: `git log --oneline "$(git describe --tags --abbrev=0 origin/main)..origin/main"`. The
@@ -44,11 +44,10 @@ runs `bin/release`. Release a batch of changes, not every merge.
      checks, and squash merges it. The record rides in the release commit, so no second pull request is needed;
      `bin/release` refuses a version with no line, or whose `src/`, `package.json` or lockfile differ from the hashed
      ones (`WC-REL-17`);
-   - runs `bin/release --local`, which runs `pnpm release:check` and the local validation, publishes, tags and makes
-     the GitHub release (`WC-REL-11`, `WC-REL-13`).
+   - runs `bin/release`, which runs `pnpm release:check` and starts `.github/workflows/release.yml`: GitHub Actions
+     publishes through npm trusted publishing, tags and makes the GitHub release (`WC-REL-11`, `WC-REL-13`).
 
    On success the last line is `published @wirecat/beeline-cli@<version>`. A failed live check leaves main as it was
-   and pushes nothing. The npm token is `NPM_TOKEN`, or the keyring entry `NPM_KEYRING_ACCOUNT` names (service `npm`),
-   or the owner's npm login; there is no default account.
+   and pushes nothing. No npm token is needed: npm trusts the release workflow. `gh` must be signed in.
 9. **After the release.** Raise `contracts/previous/` and `contracts/upgrade.json` to the version just published, in
    the next pull request.

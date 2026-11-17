@@ -93,12 +93,15 @@ export const beelineApi = (
     wait = realSleep,
     random = Math.random,
     timeouts = TIMEOUTS,
+    deadline = (ms: number) => AbortSignal.timeout(ms),
   }: {
     fetch?: FetchLike
     signal?: AbortSignal
     wait?: SleepLike
     random?: () => number
     timeouts?: typeof TIMEOUTS
+    /** The signal that ends one request after `ms`; a test aborts it without waiting. */
+    deadline?: (ms: number) => AbortSignal
   } = {},
 ) => {
   // Our own deadline per request fires first; hostFetch's is only the outer bound.
@@ -121,14 +124,14 @@ export const beelineApi = (
       attempt,
     })
     // The limit covers the body too: a download that stalls halfway is the slow case, not a late first byte.
-    const deadline = AbortSignal.timeout(timeoutMs)
-    const bounded = signal ? AbortSignal.any([signal, deadline]) : deadline
+    const expired = deadline(timeoutMs)
+    const bounded = signal ? AbortSignal.any([signal, expired]) : expired
     const broken = (message: string): CliError => {
       if (signal?.aborted) {
         answered({ errorCode: "cancelled" })
         throw new CliError("cancelled", "stopped before Beeline answered")
       }
-      if (deadline.aborted) {
+      if (expired.aborted) {
         answered({ errorCode: "timeout" })
         return new CliError("timeout", `Beeline did not answer within ${timeoutMs / 1000} s`, { retryable: true })
       }
@@ -271,19 +274,16 @@ const readCapped = async (response: Response, maxBytes: number): Promise<Uint8Ar
 const failure = async (response: Response): Promise<CliError> => {
   let errorCode: string | undefined
   try {
-    const body = (await readJsonResponse(response, { maxBytes: LARGEST_ERROR })) as { errorCode?: unknown }
-    if (typeof body.errorCode === "string" && /^[A-Za-z]{1,64}$/.test(body.errorCode)) errorCode = body.errorCode
+    const body: unknown = await readJsonResponse(response, { maxBytes: LARGEST_ERROR })
+    const code = typeof body === "object" && body !== null && "errorCode" in body ? body.errorCode : undefined
+    if (typeof code === "string" && /^[A-Za-z]{1,64}$/.test(code)) errorCode = code
   } catch {
     errorCode = undefined
   }
   const status = response.status
   // Beeline answers a wrong token with 403, not 401 (seen 2026-10-31).
   if (status === 401 || status === 403)
-    return new CliError(
-      "authentication_error",
-      "Beeline refused the API token; set a new one with `beeline <profile> session start`",
-      { status, reason: "token.refused" },
-    )
+    return new CliError("authentication_error", "Beeline refused the API token", { status, reason: "token.refused" })
   return new CliError(statusToCode(status), `Beeline answered ${status}${errorCode ? ` ${errorCode}` : ""}`, {
     status,
     retryable: retryableStatus(status),

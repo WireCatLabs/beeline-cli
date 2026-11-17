@@ -3,6 +3,7 @@ import type { Pcm } from "@wirecat/cli-core/speech"
 import { afterEach, beforeEach, expect, it } from "vitest"
 import type { Speech } from "./commands/transcribe.js"
 import { run } from "./program.js"
+import { strictBeeline } from "./testing/fake-beeline.js"
 import { record } from "./testing/records.js"
 
 const beeline = async (url: string | URL | Request) =>
@@ -16,7 +17,7 @@ const ran = async (argv: string[], options: Record<string, unknown> = {}) => {
   const code = await run(argv, {
     streams: { data: (text) => out.push(text), diagnostic: (text) => err.push(text) },
     tty: false,
-    fetch: beeline,
+    fetch: strictBeeline(beeline),
     ...options,
   })
   return { code, out: out.join("\n"), err: err.join("\n") }
@@ -47,16 +48,41 @@ afterEach(() => {
 it("transcribes the newest calls of five seconds or more, at most --max-meetings, and says how many remain", async () => {
   const done = await ran(["work", "meetings", "transcribe", "--max-meetings", "1", "--json"], { speech: speech() })
   expect(done.code, done.err).toBe(0)
-  expect(JSON.parse(done.out).item).toMatchObject({ transcribed: 1, remaining: 1, failed: [] })
+  expect(JSON.parse(done.out).item).toMatchObject({ transcribed: 1, audio_ms: 10_000, remaining: 1, failed: [] })
 
   const listed = JSON.parse((await ran(["work", "meetings", "list", "--json"])).out).items
-  const newest = listed.find((meeting: { id: string }) => meeting.id) as { id: string }
+  const newest: { id: string } = listed.find((meeting: { id: string }) => meeting.id)
   const transcript = JSON.parse((await ran(["work", "meetings", "transcript", newest.id, "--json"])).out).items[0]
   expect(transcript.lines.map(({ speaker }: { speaker: string }) => speaker)).toEqual(["Менеджер", "Клиент"])
 })
 
+it("words a failed call by its registered reason, never with the error's own text", async () => {
+  const broken = speech({
+    decodeChannels: async () => {
+      throw new Error("ENOENT: /home/someone/.cache/canary-7f3a.mp3")
+    },
+  })
+  const crashed = await ran(["work", "meetings", "transcribe", "--max-meetings", "1", "--json"], { speech: broken })
+  expect(crashed.code, crashed.err).toBe(0)
+  expect(JSON.parse(crashed.out).item.failed).toEqual([
+    expect.objectContaining({ reason: "command.crashed", message: "the call could not be transcribed" }),
+  ])
+  expect(crashed.out).not.toContain("canary-7f3a")
+})
+
+it("words a failed call with no reason of its own by its code's registered reason", async () => {
+  const refused = speech({
+    decodeChannels: async () => {
+      throw new CliError("provider_error", "Beeline answered 500 about canary-7f3a")
+    },
+  })
+  const failed = await ran(["work", "meetings", "transcribe", "--max-meetings", "1", "--json"], { speech: refused })
+  expect(JSON.parse(failed.out).item.failed).toEqual([expect.objectContaining({ reason: "provider.refused" })])
+  expect(failed.out).not.toContain("canary-7f3a")
+})
+
 it("transcribes the calls a query names, again with --replace, and lists one that is not two channels", async () => {
-  const listed = JSON.parse((await ran(["work", "meetings", "list", "--json"])).out).items as { id: string }[]
+  const listed: { id: string }[] = JSON.parse((await ran(["work", "meetings", "list", "--json"])).out).items
   const id = listed[0]?.id
   expect((await ran(["work", "meetings", "transcribe", `id:${id}`, "--json"], { speech: speech() })).code).toBe(0)
 
@@ -71,7 +97,12 @@ it("transcribes the calls a query names, again with --replace, and lists one tha
     },
   )
   expect(JSON.parse(again.out).item.failed).toEqual([
-    { meeting: Number(id), reason: "recording.not-stereo", message: "the recording is not two separate channels" },
+    {
+      meeting: Number(id),
+      ref: expect.stringMatching(/^meeting:\d+\/\d+$/),
+      reason: "recording.not-stereo",
+      message: "the recording is not two separate channels",
+    },
   ])
 })
 
@@ -112,7 +143,7 @@ it("a later sync that lists a transcribed call again keeps its transcript", asyn
   expect((await ran(["work", "meetings", "transcribe", "--json"], { speech: speech() })).code).toBe(0)
   expect((await ran(["work", "meetings", "sync", "--since-time", "2026-10-01T00:00:00Z"])).code).toBe(0)
 
-  const listed = JSON.parse((await ran(["work", "meetings", "list", "--json"])).out).items as { id: string }[]
+  const listed: { id: string }[] = JSON.parse((await ran(["work", "meetings", "list", "--json"])).out).items
   const read = await Promise.all(listed.map(({ id }) => ran(["work", "meetings", "transcript", id, "--json"])))
   expect(read.filter((one) => one.code === 0 && JSON.parse(one.out).items.length > 0)).toHaveLength(2)
 })
@@ -146,7 +177,7 @@ it("search meetings finds a word in the transcripts and cites the call", async (
   expect((await ran(["work", "meetings", "transcribe", "--json"], { speech: speech() })).code).toBe(0)
   const found = await ran(["work", "search", "meetings", "слушаю", "--json"])
   expect(found.code, found.err).toBe(0)
-  const hits = JSON.parse(found.out).items as { excerpt: string; ref: string }[]
+  const hits: { excerpt: string; ref: string }[] = JSON.parse(found.out).items
   expect(hits.length).toBeGreaterThan(0)
   expect(hits[0]?.excerpt).toContain("Слушаю")
   expect(JSON.parse((await ran(["work", "search", "meetings", "доставка", "--json"])).out).items).toEqual([])
@@ -202,7 +233,7 @@ it("lists a call over an hour as failed without downloading it", async () => {
 
 it("keeps a transcribed call's recording for the owner only and names it in meetings show; the setting drops it", async () => {
   const { existsSync, rmSync, statSync } = await import("node:fs")
-  const listed = JSON.parse((await ran(["work", "meetings", "list", "--json"])).out).items as { id: string }[]
+  const listed: { id: string }[] = JSON.parse((await ran(["work", "meetings", "list", "--json"])).out).items
   const id = listed[0]?.id
   const transcribe = () =>
     ran(["work", "meetings", "transcribe", `id:${id}`, "--replace", "--json"], { speech: speech() })

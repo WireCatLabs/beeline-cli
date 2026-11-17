@@ -38,32 +38,37 @@ export const openBeelineStore = async (env: NodeJS.ProcessEnv, { readOnly = fals
 }
 
 /**
- * A read finds the profile's account among the rows an earlier sync saved and writes nothing. The first read of a
- * profile, a store that is missing or needs a migration, and every sync and transcription open it for writing, as
- * bitrix24-cli does. Under `BEELINE_READ_ONLY` a read with no store or no account reads an empty store in a temporary
- * folder instead, so the lock creates no `wirecat.db`; a sync still writes, as cli-core lets a fetch through.
+ * A read finds the profile's account among the rows an earlier sync saved and writes nothing. A profile with no saved
+ * account, or no store at all, reads an empty store in a temporary folder, so a mistyped profile saves no account and
+ * creates no `wirecat.db`. A store that needs a migration is opened for writing to migrate it, unless
+ * `BEELINE_READ_ONLY` is set. Only a command that `saves` (a sync, a transcription) saves the profile's account.
  */
 export const openProfileStore = async (
   env: NodeJS.ProcessEnv,
   profile: string,
   reads: boolean,
+  saves = !reads,
 ): Promise<{ store: MessageStore; accountId: number }> => {
-  const key = { provider: PROVIDER.name, account: profile }
-  if (reads) {
-    const { readOnlyLockOf } = await import("@wirecat/cli-core/cli")
-    const locked = readOnlyLockOf(IDENTITY, env) !== undefined
-    const store = await openBeelineStore(env, { readOnly: true }).catch((error: unknown) => {
-      if (locked && !(isCliError(error) && error.code === "not_found")) throw error
-      return undefined
-    })
-    if (store) {
-      const saved = await store.accounts.storedAccount(key).catch(() => undefined)
-      if (saved) return { store, accountId: saved.id }
-      await store.close()
-    }
-    if (locked) return openEmptyStore(env, profile)
+  if (saves) return openWritable(env, profile)
+  if (!reads) return openKnown(await openBeelineStore(env), env, profile)
+  const { readOnlyLockOf } = await import("@wirecat/cli-core/cli")
+  const locked = readOnlyLockOf(IDENTITY, env) !== undefined
+  let store: MessageStore
+  try {
+    store = await openBeelineStore(env, { readOnly: true })
+  } catch (error) {
+    if (isCliError(error) && error.code === "not_found") return openEmptyStore(env, profile)
+    if (locked) throw error
+    store = await openBeelineStore(env)
   }
-  return openWritable(env, profile)
+  return openKnown(store, env, profile)
+}
+
+const openKnown = async (store: MessageStore, env: NodeJS.ProcessEnv, profile: string) => {
+  const saved = await store.accounts.storedAccount({ provider: PROVIDER.name, account: profile }).catch(() => undefined)
+  if (saved) return { store, accountId: saved.id }
+  await store.close()
+  return openEmptyStore(env, profile)
 }
 
 const openWritable = async (env: NodeJS.ProcessEnv, profile: string) => {

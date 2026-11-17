@@ -30,6 +30,7 @@ const streamOf = (chunks: number, chunk: Uint8Array, fail?: Error) => {
 
 const stalled = async (_url: string | URL | Request, init: RequestInit = {}) =>
   new Promise<Response>((_, reject) => {
+    if (init.signal?.aborted) return reject(init.signal.reason)
     init.signal?.addEventListener("abort", () => reject(init.signal?.reason), { once: true })
   })
 
@@ -179,8 +180,8 @@ describe("failures", () => {
       calls++
       return stalled(url, init)
     }
-    const timeouts = { listMs: 10, recordingMs: 10 }
-    const error = await caught(beelineApi(TOKEN, { fetch, wait: async () => {}, timeouts }).records())
+    const deadline = () => AbortSignal.abort(new DOMException("timed out", "TimeoutError"))
+    const error = await caught(beelineApi(TOKEN, { fetch, wait: async () => {}, deadline }).records())
 
     expect(error).toMatchObject({ code: "timeout", details: { retryable: true, attempts: calls } })
     expect(calls).toBeGreaterThan(1)
@@ -191,7 +192,7 @@ describe("failures", () => {
     let calls = 0
     const fetch = async (url: string | URL | Request, init: RequestInit = {}) => {
       calls++
-      setTimeout(() => run.abort(), 1)
+      queueMicrotask(() => run.abort())
       return stalled(url, init)
     }
     const error = await caught(beelineApi(TOKEN, { fetch, signal: run.signal }).recording("1"))

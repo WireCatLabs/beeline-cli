@@ -31,7 +31,7 @@ const writeNew = async (path: string, bytes: Uint8Array) => {
   try {
     await writeFile(path, bytes, { flag: "wx", mode: 0o600 })
   } catch (error) {
-    if ((error as NodeJS.ErrnoException).code === "EEXIST")
+    if (error instanceof Error && "code" in error && error.code === "EEXIST")
       throw new CliError("validation_error", "output file already exists; choose another path", { param: "--output" })
     throw error
   }
