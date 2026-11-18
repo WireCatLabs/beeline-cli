@@ -27,6 +27,7 @@ export const DESKTOP: ManifestIdentity & { hosts: readonly string[] } = {
   signIn: {
     gives: "Lets your agent read the recorded calls of your Beeline Cloud PBX, transcribed on this computer.",
     asks: "A Beeline Cloud PBX API token, from the Beeline cabinet: Услуги → Интеграция по API.",
+    methods: [{ id: "token", label: "API token", words: ["{profile}", "session", "start", "--json"], stdin: true }],
   },
   hosts: ["cloudpbx.beeline.ru"],
 }
