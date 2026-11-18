@@ -2,6 +2,31 @@
 
 Notable changes to `@wirecat/beeline-cli`. One section per version, newest first.
 
+## 0.4.0 — 18.11.2026
+
+### Added
+
+- **WireCat Desktop signs beeline in in its own window.** The manifest now says how (cli-base's `signIn.methods`):
+  Desktop asks for the API token in a hidden field and passes it to `beeline <profile> session start --json` on
+  stdin, so no terminal is needed. It needs a Desktop that shows a token field for such a sign-in; an older Desktop
+  offers the window but cannot finish it, so sign in at a terminal there.
+
+### Changed — may break callers
+
+- **`meetings transcribe` answers `audio_ms` in place of `audio_seconds`**: the length of the audio it transcribed,
+  in milliseconds, like every other length of time in a WireCat answer. Read `audio_ms` and divide by 1000 for
+  seconds.
+- **Each call in the `failed` list of `meetings transcribe` carries `ref`**, the reference `meetings list` prints,
+  so the next command takes it as it is. Its `message` is now always the fixed wording of its `reason`, never the
+  text of the error behind it.
+
+### Fixed
+
+- **A read on a profile that never synced, such as a mistyped one, no longer saves an account for it.**
+  `meetings list`, `meetings show`, `search meetings` and the other reads answer as for a profile with no calls.
+- **A refused Beeline token names the profile in the next step**: `beeline work session start`, not
+  `beeline <profile> session start`.
+
 ## 0.3.0 — 16.11.2026
 
 ### Added
