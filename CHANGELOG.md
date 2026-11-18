@@ -2,6 +2,15 @@
 
 Notable changes to `@wirecat/beeline-cli`. One section per version, newest first.
 
+## 0.4.1 — 19.11.2026
+
+### Fixed
+
+- **WireCat Desktop can sign a beeline account out or remove it, and shows when the calls last synced.** The
+  manifest now carries `accountRemove` (`session end`, and `account remove` keeping or deleting the calls) and the
+  last-sync query of `meetings sync`, written by cli-base 0.119.0. It needs WireCat Desktop 0.7.3 or newer: an older
+  Desktop refuses the manifest, so it cannot add or update beeline until it updates itself.
+
 ## 0.4.0 — 18.11.2026
 
 ### Added
