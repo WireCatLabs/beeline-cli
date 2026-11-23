@@ -1,0 +1,19 @@
+{
+  "before.title": "Antes de empezar",
+  "before.intro": "beeline copia las llamadas grabadas de tu centralita en la nube de Beeline (Облачная АТС) a este ordenador y las pasa a texto aquí mismo. De Beeline solo necesita un token de API.",
+  "before.needs": "Necesitas:\n\n- El usuario y la contraseña del panel de la centralita. Beeline los envía cuando conecta la centralita. Si no los tienes, pídelos a quien gestiona la centralita en tu empresa.\n- El servicio **«Интеграция по API»** (integración por API). Si aún no está activo, lo activas en el mismo panel, en el paso siguiente. Beeline muestra el precio antes de comprar.",
+  "before.recording": "beeline solo toma las llamadas grabadas. Comprueba que tu centralita tiene la grabación de llamadas activada.",
+  "where.title": "Consigue el token",
+  "where.steps": "1. Abre el panel de la centralita e inicia sesión: https://cloudpbx.beeline.ru/\n2. Elige **«Услуги»** (Servicios) → **«Интеграции»** (Integraciones) → **«Интеграция по API»**.\n3. Si el servicio aún no está activo, pulsa **«Подключить за …»** (Conectar por …) y luego **«Купить»** (Comprar). Beeline muestra el precio antes de comprar.\n4. El token aparece en la ficha del servicio. Si no hay ninguno, pulsa **«Создать токен»** (Crear token).\n5. Pulsa el icono de copiar junto al token.\n\nUn token tiene este aspecto: `xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx`, 36 caracteres de letras, cifras y guiones.",
+  "where.secret": "Quien tenga este token puede leer y borrar tus llamadas en Beeline. No lo envíes por chat ni por correo.",
+  "token.title": "Pega el token",
+  "token.paste": "Pega el token que copiaste. beeline lo comprueba con Beeline y solo entonces lo guarda.",
+  "token.label": "Token de API",
+  "token.hint": "Se guarda en el llavero del sistema o, si no lo hay, en un archivo que solo tú puedes leer.",
+  "check.title": "Comprobando el token",
+  "check.body": "beeline pide a Beeline la lista de llamadas con este token. El token se guarda solo si Beeline lo acepta.",
+  "failed.title": "La comprobación falló",
+  "failed.body": "beeline no pudo comprobar el token, así que no guardó nada. Revisa la conexión a internet y vuelve a intentarlo.",
+  "done.title": "Listo",
+  "done.body": "El perfil está listo. Copia las llamadas grabadas a este ordenador y luego pásalas a texto:"
+}

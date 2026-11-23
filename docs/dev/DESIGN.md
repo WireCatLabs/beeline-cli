@@ -47,11 +47,11 @@ Owner, 2026-10-31.
 
 ## The API
 
-Beeline documents its API only inside the cabinet, behind the sign-in: Услуги → Интеграция по API → the documentation,
-section «Операции с записями разговоров». It has no public address to link. What `src/beeline-api.ts` relies on from
-that page: `GET /records` lists at most 100 records per call, in order after the `id` given, narrowed by `userId`,
-`dateFrom` and `dateTo`; `GET /v2/records/{recordId}/download` returns the file; the token goes in the
-`X-MPBX-API-AUTH-TOKEN` header. A wrong token is answered with 403, not 401 (live check, 2026-10-31).
+Beeline documents its API only inside the cabinet, behind the sign-in: Услуги → Интеграции → Интеграция по API →
+the documentation, section «Операции с записями разговоров». It has no public address to link. What
+`src/beeline-api.ts` relies on from that page: `GET /records` lists at most 100 records per call, in order after
+the `id` given, narrowed by `userId`, `dateFrom` and `dateTo`; `GET /v2/records/{recordId}/download` returns the
+file; the token goes in the `X-MPBX-API-AUTH-TOKEN` header. A wrong token is answered with 403, not 401 (live check, 2026-10-31).
 
 ## Every request inside cli-core's run
 

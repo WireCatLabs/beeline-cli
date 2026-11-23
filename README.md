@@ -166,8 +166,9 @@ beeline work session end                 # forget the token; the synced calls st
 beeline work account remove --keep-data  # forget the profile here; --delete-data deletes its calls too
 ```
 
-The token comes from the Beeline cabinet: Услуги → Интеграция по API. `beeline` keeps it in the system keyring. Where
-the keyring fails, it uses a private file and says so once. `BEELINE_TOKEN` in the environment is read first.
+The token comes from the Cloud PBX cabinet, <https://cloudpbx.beeline.ru/>: Услуги → Интеграции → Интеграция по API.
+`beeline work setup` walks through it step by step. `beeline` keeps the token in the system keyring. Where the keyring
+fails, it uses a private file and says so once. `BEELINE_TOKEN` in the environment is read first.
 `BEELINE_PROFILE=work` names the profile for a whole shell session.
 
 ## Settings and permissions

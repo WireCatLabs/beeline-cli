@@ -73,6 +73,53 @@
     },
     {
       "path": [
+        "setup"
+      ],
+      "summary": "connect this profile, question by question",
+      "effects": {
+        "remote": "read",
+        "local": "write"
+      },
+      "permission": "setup"
+    },
+    {
+      "path": [
+        "setup",
+        "show"
+      ],
+      "summary": "print the connection flow as JSON, for WireCat Desktop",
+      "effects": {
+        "remote": "none",
+        "local": "read"
+      },
+      "permission": "setup.show"
+    },
+    {
+      "path": [
+        "setup",
+        "apply"
+      ],
+      "summary": "check the answers on stdin against the flow, and save them",
+      "effects": {
+        "remote": "read",
+        "local": "write"
+      },
+      "permission": "setup.apply"
+    },
+    {
+      "path": [
+        "setup",
+        "run"
+      ],
+      "summary": "run one step of the flow, as WireCat Desktop does",
+      "effects": {
+        "remote": "read",
+        "local": "write"
+      },
+      "permission": "setup.run"
+    },
+    {
+      "path": [
         "account",
         "remove"
       ],
@@ -647,12 +694,11 @@
     "search": null,
     "setup": [
       "{profile}",
-      "session",
-      "start"
+      "setup"
     ],
     "signIn": {
       "gives": "Lets your agent read the recorded calls of your Beeline Cloud PBX, transcribed on this computer.",
-      "asks": "A Beeline Cloud PBX API token, from the Beeline cabinet: Услуги → Интеграция по API.",
+      "asks": "A Beeline Cloud PBX API token, from the cabinet at cloudpbx.beeline.ru: Услуги → Интеграции → Интеграция по API.",
       "methods": [
         {
           "id": "token",
