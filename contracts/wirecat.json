@@ -711,7 +711,8 @@
           ],
           "stdin": true
         }
-      ]
+      ],
+      "setupFrom": "0.0.0"
     },
     "skill": {
       "status": [
