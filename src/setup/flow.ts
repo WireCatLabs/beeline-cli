@@ -8,8 +8,8 @@ import ru from "./texts.ru.json" with { type: "json" }
 
 /** The proof `session start` runs. Editing a profile without a new token proves the kept one. */
 const check: SetupCheck = async ({ command, secrets }) => {
-  await provenToken(command, () => secrets.token ?? keptToken(command))
-  return undefined
+  const token = await provenToken(command, () => secrets.token ?? keptToken(command))
+  return secrets.token === undefined ? undefined : { keep: { secrets: { token } } }
 }
 
 export const beelineSetup = defineSetup({
@@ -32,7 +32,6 @@ export const beelineSetup = defineSetup({
       blocks: [
         { type: "text", text: "where.steps" },
         { type: "code", code: "https://cloudpbx.beeline.ru/", copy: true },
-        { type: "link", role: "button", href: "https://cloudpbx.beeline.ru/", text: "where.open" },
         { type: "note", role: "warning", text: "where.secret" },
       ],
       next: "token",
