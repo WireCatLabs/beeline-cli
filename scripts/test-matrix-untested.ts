@@ -6,6 +6,12 @@ const SHARED_MCP =
 const SHARED_CORE = "cli-core's shared command or flag, tested in cli-core; beeline adds nothing to it"
 
 export const UNTESTED: { command: string; option?: string; reason: string }[] = [
+  {
+    command: "setup",
+    reason:
+      "cli-core's setupCommand asks the flow's questions in a terminal; its setup-command tests drive that, and " +
+      "src/setup/flow.test.ts runs this flow through setup apply and setup run apply",
+  },
   ...["meetings list", "meetings show"].map((command) => ({
     command,
     option: "--backend",

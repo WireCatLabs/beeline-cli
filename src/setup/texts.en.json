@@ -1,0 +1,20 @@
+{
+  "before.title": "Before you start",
+  "before.intro": "beeline copies the recorded calls of your Beeline Cloud PBX to this computer and turns them into text here. It needs one thing from Beeline: an API token.",
+  "before.needs": "You need:\n\n- The login and password of your Cloud PBX cabinet. Beeline sends them when it connects the PBX. If you don't have them, ask the person who manages the PBX in your company.\n- The **«Интеграция по API»** (API integration) service. It is paid monthly. You turn it on in the same cabinet in the next step.",
+  "before.recording": "beeline takes only recorded calls. Check that call recording is on for your PBX.",
+  "where.title": "Get the token",
+  "where.steps": "1. Open the Cloud PBX cabinet and sign in: https://cloudpbx.beeline.ru/\n2. Choose **«Услуги»** (Services) → **«Интеграции»** (Integrations) → **«Интеграция по API»**.\n3. If the service is not on yet, press **«Подключить за …»** (Connect for …), then **«Купить»** (Buy). Beeline shows the price before you buy.\n4. The token appears in the service card. If there is none, press **«Создать токен»** (Create token).\n5. Press the copy icon next to the token.\n\nA token looks like this: `xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx`, 36 characters of letters, digits and dashes.",
+  "where.open": "Open the cabinet",
+  "where.secret": "Anyone with this token can read and delete your calls in Beeline. Don't send it in chats or mail.",
+  "token.title": "Paste the token",
+  "token.paste": "Paste the token you copied. beeline checks it with Beeline and only then saves it.",
+  "token.label": "API token",
+  "token.hint": "Kept in the system keyring, or, without one, in a file only you can read.",
+  "check.title": "Checking the token",
+  "check.body": "beeline asks Beeline for the call list with this token. The token is saved only if Beeline accepts it.",
+  "failed.title": "The check failed",
+  "failed.body": "beeline could not check the token, so it saved nothing. Check the internet connection and try again.",
+  "done.title": "Done",
+  "done.body": "The profile is ready. Copy the recorded calls to this computer, then turn them into text:"
+}

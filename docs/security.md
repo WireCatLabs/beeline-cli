@@ -14,8 +14,8 @@ What WireCat CLIs share — the keyring, permissions, MCP, run records and what 
 
 ## The API token
 
-- The token comes from the Beeline cabinet: Услуги → Интеграция по API. Anyone who holds it can read and delete
-  every recording of the PBX, so treat it like a password.
+- The token comes from the Beeline cabinet: Услуги → Интеграции → Интеграция по API. Anyone who holds it can read
+  and delete every recording of the PBX, so treat it like a password.
 - `beeline work session start` reads it hidden or from stdin, checks it against Beeline, and only then keeps it in
   the system keyring. Where the keyring fails, it goes to a file only you can read, and `beeline` says so once.
   `BEELINE_TOKEN` in the environment is read before both.

@@ -12,5 +12,12 @@
     "target": "entity meeting_details",
     "reason": "cli-core 0.674.0 adds a phone call's `call` (direction, manager, client_phone) to meetings show; the published zm is on 0.667.0, and the entry goes once it publishes on 0.674.0+.",
     "review_after": "2026-11-27"
+  },
+  {
+    "group": "all",
+    "rule": "same-error-reason",
+    "target": "reason account-remove.unknown-profile=account-rename.unknown-profile",
+    "reason": "cli-core #3189 (0.717.0) makes account rename of an unknown profile fail with profile.unknown; beeline is on cli-core 0.691.0 like the other published CLIs, and the entry goes with the next cli-core bump.",
+    "review_after": "2026-12-05"
   }
 ]

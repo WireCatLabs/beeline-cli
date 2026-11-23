@@ -17,6 +17,7 @@ import {
   type RunOptions,
   run as runShared,
   runsCommand,
+  setupCommand,
   skillCommand,
   upgradeCommand,
 } from "@wirecat/cli-core/cli"
@@ -28,6 +29,7 @@ import { modelsCommand } from "./commands/models.js"
 import { sessionCommand } from "./commands/session.js"
 import { configuration } from "./config.js"
 import { IDENTITY, PACKAGE, SKILL } from "./identity.js"
+import { beelineSetup } from "./setup/flow.js"
 
 const update = appUpdate({
   packageName: PACKAGE,
@@ -75,6 +77,7 @@ export const definition = (): ProgramDefinition => {
     commands: () => [
       commandsCommand(IDENTITY),
       sessionCommand(),
+      setupCommand(beelineSetup),
       accountCommand(),
       ...meetings.commands(),
       modelsCommand(),

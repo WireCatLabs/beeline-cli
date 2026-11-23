@@ -37,6 +37,25 @@ const contextOf = (command: Command) => {
 const tokenStore = (env: NodeJS.ProcessEnv, keyring: KeyringStore | undefined) =>
   new ProfileTokenStore({ app: IDENTITY, env, ...(keyring ? { keyring } : {}) })
 
+/** The guards and the proof `session start` and the setup flow share: Beeline must accept the token first. */
+export const provenToken = async (
+  command: Command,
+  typed: () => Promise<string | undefined> | string | undefined,
+): Promise<string> => {
+  const { profile, run } = contextOf(command)
+  refuseCommandName(profile, commandWords(rootOf(command)), IDENTITY.command)
+  refuseOffline(command, "Beeline")
+  const token = (await typed())?.trim()
+  if (!token) throw new CliError("validation_error", "no token was given", { param: "token" })
+  await run(() => beelineFor(command, token, profile).records())
+  return token
+}
+
+export const keptToken = (command: Command): string | undefined => {
+  const { profile, tokens } = contextOf(command)
+  return tokens.read(profile)?.secret
+}
+
 const answer = (command: Command, item: unknown) => renderAnswer(command, outputFor(command), itemOf(item))
 
 const startCommand = () =>
@@ -50,9 +69,9 @@ const startCommand = () =>
   )
     .summary("sign in with the Beeline API token")
     .description(
-      "sign this profile in: the API token (Beeline cabinet → Услуги → Интеграция по API) is asked hidden or read " +
-        "from stdin, checked against Beeline, and only then kept in the keyring, or in a private file when the keyring " +
-        "fails",
+      "sign this profile in: the API token (Beeline cabinet → Услуги → Интеграции → Интеграция по API) is asked " +
+        "hidden or read from stdin, checked against Beeline, and only then kept in the keyring, or in a private file " +
+        "when the keyring fails",
     )
     .option(
       "--credential-storage <storage>",
@@ -64,12 +83,8 @@ const startCommand = () =>
       const storage = args.credentialStorage
       if (storage !== "keyring" && storage !== "file")
         throw new CliError("validation_error", "--credential-storage takes keyring or file")
-      const { profile, env, tokens, run } = contextOf(this)
-      refuseCommandName(profile, commandWords(rootOf(this)), IDENTITY.command)
-      refuseOffline(this, "Beeline")
-      const token = (await readSecret("Beeline API token: ", secretInputOf(this))).trim()
-      if (!token) throw new CliError("validation_error", "no token was given")
-      await run(() => beelineFor(this, token, profile).records())
+      const { profile, env, tokens } = contextOf(this)
+      const token = await provenToken(this, () => readSecret("Beeline API token: ", secretInputOf(this)))
       const storedIn = tokens.write(profile, token, storage)
       // Beeline names no user behind a token; the store keys the account by the profile, so this does too.
       rememberAccount(IDENTITY, profile, profile, env)
