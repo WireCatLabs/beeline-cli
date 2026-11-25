@@ -2,6 +2,15 @@
 
 Notable changes to `@wirecat/beeline-cli`. One section per version, newest first.
 
+## Unreleased
+
+### Changed — may break callers
+
+- **Built on cli-core 1.0.0 and cli-base 1.0.0.** The store types come from `@wirecat/cli-core/store/areas`. The store
+  migrates to version 73 on first open: once a 1.0 tool opens the store, a 0.x tool refuses it, so upgrade every
+  WireCat CLI together. The lint exception for the short `beeline` command is gone: cli-base 1.0 accepts it beside
+  `wcat-beeline`.
+
 ## 0.5.0 — 23.11.2026
 
 ### Added
