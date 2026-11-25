@@ -35,6 +35,7 @@
       "args": ["contract", "meetings", "list", "--json"],
       "exit": 0,
       "stream": "stdout",
+      "diagnosticPattern": "^(the store moved to schema \\d+; every other WireCat CLI that uses it needs a version that speaks it — run `<cli> upgrade` for each\\n)?$",
       "kind": "json",
       "allowSensitiveOutput": true,
       "json": {
@@ -54,6 +55,7 @@
       "args": ["contract", "meetings", "show", "{{meeting}}", "--json"],
       "exit": 0,
       "stream": "stdout",
+      "diagnosticPattern": "^(the store moved to schema \\d+; every other WireCat CLI that uses it needs a version that speaks it — run `<cli> upgrade` for each\\n)?$",
       "kind": "json",
       "allowSensitiveOutput": true,
       "json": {
