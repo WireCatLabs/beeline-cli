@@ -96,8 +96,8 @@ describe("recordings", () => {
     expect(calls[0]?.url.pathname.endsWith("/v2/records/629303665/download")).toBe(true)
   })
 
-  it("refuses a recording over 256 MB that comes with no content-length, without reading it all", async () => {
-    const { fetch, calls } = answering(() => new Response(streamOf(300, new Uint8Array(MB))))
+  it("refuses a recording over 2 GB that comes with no content-length, without reading it all", async () => {
+    const { fetch, calls } = answering(() => new Response(streamOf(2049, new Uint8Array(MB))))
     const error = await caught(beelineApi(TOKEN, { fetch }).recording("1"))
 
     expect(error.details.reason).toBe("recording.too-large")
@@ -202,7 +202,7 @@ describe("failures", () => {
   })
 
   it("reads no more of an error answer than a short error code needs", async () => {
-    const { fetch } = answering(() => new Response(streamOf(300, new Uint8Array(MB)), { status: 400 }))
+    const { fetch } = answering(() => new Response(streamOf(2049, new Uint8Array(MB)), { status: 400 }))
     const error = await caught(beelineApi(TOKEN, { fetch }).records())
 
     expect(error).toMatchObject({ code: "validation_error", details: { status: 400 } })

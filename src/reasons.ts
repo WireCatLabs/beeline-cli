@@ -8,7 +8,7 @@ const CORE = new Set(CORE_REASONS.map((one) => one.reason))
 const OWN: [reason: string, code: string, message: string, details?: string[]][] = [
   ["token.refused", "authentication_error", "Beeline refused the API token"],
   ["recording.empty", "provider_error", "Beeline sent an empty recording"],
-  ["recording.too-large", "validation_error", "the recording is larger than 256 MB"],
+  ["recording.too-large", "validation_error", "the recording is larger than 2 GB"],
   [
     "recording.too-long",
     "validation_error",
