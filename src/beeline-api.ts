@@ -26,7 +26,7 @@ export const PAGE_SIZE = 100
 
 const LARGEST_LIST = 4 * 1024 * 1024
 const LARGEST_ERROR = 64 * 1024
-const LARGEST_RECORDING = 256 * 1024 * 1024
+const LARGEST_RECORDING = 2 * 1024 ** 3
 
 /** Our limits, not Beeline's: a list answers in a second or two, and an hour's stereo recording is tens of MB. */
 export const TIMEOUTS = { listMs: 30_000, recordingMs: 120_000 }
@@ -246,7 +246,7 @@ export const beelineApi = (
 export type BeelineApi = ReturnType<typeof beelineApi>
 
 const tooLarge = () =>
-  new CliError("validation_error", "the recording is larger than 256 MB", { reason: "recording.too-large" })
+  new CliError("validation_error", "the recording is larger than 2 GB", { reason: "recording.too-large" })
 
 /** Counts the bytes as they come: Beeline may send no `content-length`, and a recording is not read without a cap. */
 const readCapped = async (response: Response, maxBytes: number): Promise<Uint8Array> => {

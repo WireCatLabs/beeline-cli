@@ -195,7 +195,7 @@ More: [settings](docs/configuration.md).
 
 - Only the calls Beeline recorded are listed: the PBX must have recording turned on for the manager.
 - Transcription is local only. A cloud speech service, such as OpenAI, is planned.
-- A recording over 256 MB is refused.
+- A recording over 2 GB is refused. It is held whole in memory while it is transcribed.
 
 ## Security
 
