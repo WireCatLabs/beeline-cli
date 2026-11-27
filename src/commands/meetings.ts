@@ -10,6 +10,7 @@ import {
   itemOf,
   listOf,
   NO_EFFECTS,
+  openProfileStore,
   outputFor,
   overrideSharedContract,
   ProfileTokenStore,
@@ -270,7 +271,7 @@ export const meetingsMount = () => {
       const run = environmentOf(at)
       const { settings, env, keyring } = baseContext(at, configuration.resolveSettings)
       const { profile } = settings
-      const [{ openProfileStore, rekeyOldClients }, { beelineFor }, { callSource }] = await Promise.all([
+      const [{ openBeelineStore, PROVIDER, rekeyOldClients }, { beelineFor }, { callSource }] = await Promise.all([
         import("../store.js"),
         import("../beeline.js"),
         import("../call-source.js"),
@@ -279,7 +280,17 @@ export const meetingsMount = () => {
       // brings the transcripts' word index up to date, which writes, so it opens the store for writing unless locked.
       const indexes = pathOf(at).join(" ") === "search meetings" && readOnlyLockOf(IDENTITY, env) === undefined
       const reads = !indexes && (metaOf(at).effects?.local === "read" || (readsOverMcp(at) && !fetchesOnly(at)))
-      const { store, accountId } = await openProfileStore(env, profile, reads, !reads && !indexes)
+      // A read, and a search's index refresh, save no account: a mistyped profile leaves no trace in the store.
+      const { store, accountId } = await openProfileStore({
+        app: IDENTITY,
+        env,
+        profile,
+        readOnly: reads,
+        provider: PROVIDER.name,
+        open: openBeelineStore,
+        name: profile,
+        saves: !reads && !indexes,
+      })
       let closed: Promise<void> | undefined
       const close = () => (closed ??= store.close())
       // Still tracked: a command that fails never reaches postAction.

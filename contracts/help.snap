@@ -30,6 +30,7 @@ Works with:
   linear                              Linear issues and projects, searchable with your other WireCat data
 
 Start here:   beeline work session start  (any profile name works)
+              beeline session list        your profiles and their logged-in accounts
 Next:         beeline commands            every command, by section
               beeline guide               scenarios: command sequences for common tasks
               beeline help options        output, offline, timeouts, dry run

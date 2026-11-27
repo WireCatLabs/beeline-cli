@@ -1,7 +1,3 @@
-import { mkdtempSync, rmSync } from "node:fs"
-import { tmpdir } from "node:os"
-import { join } from "node:path"
-import { isCliError } from "@wirecat/cli-base"
 import type { MessageStore } from "@wirecat/cli-core/store"
 import type { IdentityRekey } from "@wirecat/cli-core/store/areas"
 import { clientPhone, PROVIDER_NAME } from "./call-source.js"
@@ -21,63 +17,6 @@ export const PROVIDER = {
 export const openBeelineStore = async (env: NodeJS.ProcessEnv, { readOnly = false } = {}): Promise<MessageStore> => {
   const { openAppStore } = await import("@wirecat/cli-core/cli")
   return openAppStore(env, { app: IDENTITY, provider: PROVIDER, readOnly })
-}
-
-/**
- * A read finds the profile's account among the rows an earlier sync saved and writes nothing. A profile with no saved
- * account, or no store at all, reads an empty store in a temporary folder, so a mistyped profile saves no account and
- * creates no `wirecat.db`. A store that needs a migration is opened for writing to migrate it, unless
- * `BEELINE_READ_ONLY` is set. Only a command that `saves` (a sync, a transcription) saves the profile's account.
- */
-export const openProfileStore = async (
-  env: NodeJS.ProcessEnv,
-  profile: string,
-  reads: boolean,
-  saves = !reads,
-): Promise<{ store: MessageStore; accountId: number }> => {
-  if (saves) return openWritable(env, profile)
-  if (!reads) return openKnown(await openBeelineStore(env), env, profile)
-  const { readOnlyLockOf } = await import("@wirecat/cli-core/cli")
-  const locked = readOnlyLockOf(IDENTITY, env) !== undefined
-  let store: MessageStore
-  try {
-    store = await openBeelineStore(env, { readOnly: true })
-  } catch (error) {
-    if (isCliError(error) && error.code === "not_found") return openEmptyStore(env, profile)
-    if (locked) throw error
-    store = await openBeelineStore(env)
-  }
-  return openKnown(store, env, profile)
-}
-
-const openKnown = async (store: MessageStore, env: NodeJS.ProcessEnv, profile: string) => {
-  const saved = await store.accounts.storedAccount({ provider: PROVIDER.name, account: profile }).catch(() => undefined)
-  if (saved) return { store, accountId: saved.id }
-  await store.close()
-  return openEmptyStore(env, profile)
-}
-
-const openWritable = async (env: NodeJS.ProcessEnv, profile: string) => {
-  const store = await openBeelineStore(env)
-  const closing = (error: unknown) => store.close().then(() => Promise.reject(error))
-  const key = { provider: PROVIDER.name, account: profile }
-  // Calls are the company's: work scope, so a work search (b24's `search all`) includes them. An account already stored
-  // keeps the scope the owner gave it.
-  return { store, accountId: await store.accounts.saveAccount(key, { name: profile, scope: "work" }).catch(closing) }
-}
-
-const openEmptyStore = async (env: NodeJS.ProcessEnv, profile: string) => {
-  const folder = mkdtempSync(join(tmpdir(), "beeline-empty-"))
-  const removing = () => rmSync(folder, { recursive: true, force: true })
-  try {
-    const { store, accountId } = await openWritable({ ...env, MESSAGING_STORE: join(folder, "wirecat.db") }, profile)
-    const close = store.close.bind(store)
-    store.close = () => close().finally(removing)
-    return { store, accountId }
-  } catch (error) {
-    removing()
-    throw error
-  }
 }
 
 /**
