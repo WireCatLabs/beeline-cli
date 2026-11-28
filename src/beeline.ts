@@ -1,6 +1,6 @@
 import { CliError, isCliError, type SleepLike } from "@wirecat/cli-base"
 import type { FetchLike } from "@wirecat/cli-base/http"
-import { type BaseEnvironment, environmentOf } from "@wirecat/cli-core/cli"
+import { type BaseEnvironment, environmentOf } from "@wirecat/cli-core"
 import type { Command } from "commander"
 import { type BeelineApi, beelineApi } from "./beeline-api.js"
 import { IDENTITY } from "./identity.js"

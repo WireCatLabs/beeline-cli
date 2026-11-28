@@ -1,8 +1,14 @@
 import { writeFile } from "node:fs/promises"
 import { CliError } from "@wirecat/cli-base"
 import { annotate } from "@wirecat/cli-base/commands"
-import { answerEntity, baseContext, ownerOnlyOption, refuseOffline, writesNewFileOnlyWith } from "@wirecat/cli-core/cli"
-import type { MeetingStore } from "@wirecat/cli-core/meetings"
+import {
+  answerEntity,
+  baseContext,
+  type MeetingStore,
+  ownerOnlyOption,
+  refuseOffline,
+  writesNewFileOnlyWith,
+} from "@wirecat/cli-core"
 import { Command } from "commander"
 import * as v from "valibot"
 import type { BeelineApi } from "../beeline.js"

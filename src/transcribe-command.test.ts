@@ -1,5 +1,5 @@
 import { CliError } from "@wirecat/cli-base"
-import type { Pcm } from "@wirecat/cli-core/speech"
+import type { Pcm } from "@wirecat/cli-core"
 import { afterEach, beforeEach, expect, it } from "vitest"
 import type { Speech } from "./commands/transcribe.js"
 import { run } from "./program.js"

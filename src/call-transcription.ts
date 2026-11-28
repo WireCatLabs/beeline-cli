@@ -3,8 +3,9 @@ import type {
   MeetingMediaDescriptor,
   MeetingRecognitionSegment,
   MeetingTranscriptionSource,
-} from "@wirecat/cli-core/meetings"
-import type { Pcm, TimedText } from "@wirecat/cli-core/speech"
+  Pcm,
+  TimedText,
+} from "@wirecat/cli-core"
 
 /**
  * Beeline records the subscriber, our manager, on channel 0 and the other party on channel 1 — on outgoing and

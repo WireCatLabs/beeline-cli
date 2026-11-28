@@ -5,6 +5,7 @@ import {
   appCompleteCommand,
   appDoctorCommand,
   appMcpCommand,
+  appUpdate,
   commandsCommand,
   configCommand,
   createProgram as createSharedProgram,
@@ -20,8 +21,7 @@ import {
   setupCommand,
   skillCommand,
   upgradeCommand,
-} from "@wirecat/cli-core/cli"
-import { appUpdate } from "@wirecat/cli-core/update"
+} from "@wirecat/cli-core"
 import type { Command } from "commander"
 import { accountCommand } from "./commands/account.js"
 import { meetingsMount } from "./commands/meetings.js"

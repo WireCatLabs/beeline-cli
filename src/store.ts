@@ -1,5 +1,4 @@
-import type { MessageStore } from "@wirecat/cli-core/store"
-import type { IdentityRekey } from "@wirecat/cli-core/store/areas"
+import type { IdentityRekey, MessageStore } from "@wirecat/cli-core"
 import { clientPhone, PROVIDER_NAME } from "./call-source.js"
 import { IDENTITY } from "./identity.js"
 
@@ -15,7 +14,7 @@ export const PROVIDER = {
  * read-only open writes nothing, the entry included, and fails when the file is missing or needs a migration.
  */
 export const openBeelineStore = async (env: NodeJS.ProcessEnv, { readOnly = false } = {}): Promise<MessageStore> => {
-  const { openAppStore } = await import("@wirecat/cli-core/cli")
+  const { openAppStore } = await import("@wirecat/cli-core")
   return openAppStore(env, { app: IDENTITY, provider: PROVIDER, readOnly })
 }
 

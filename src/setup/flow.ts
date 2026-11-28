@@ -1,4 +1,4 @@
-import { defineSetup, type SetupCheck } from "@wirecat/cli-core/cli"
+import { defineSetup, type SetupCheck } from "@wirecat/cli-core"
 import { keptToken, provenToken } from "../commands/session.js"
 import { configuration } from "../config.js"
 import { IDENTITY } from "../identity.js"

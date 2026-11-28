@@ -1,5 +1,5 @@
 import { DatabaseSync } from "node:sqlite"
-import { storePath } from "@wirecat/cli-core/store"
+import { storePath } from "@wirecat/cli-core"
 import { afterEach, expect, it } from "vitest"
 import { run } from "./program.js"
 import { oldClientRekeys, openBeelineStore, rekeyOldClients } from "./store.js"

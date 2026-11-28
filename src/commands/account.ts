@@ -1,6 +1,6 @@
 import { resolvePaths } from "@wirecat/cli-base"
 import { annotate } from "@wirecat/cli-base/commands"
-import { type AccountRemoval, accountRemoveCommand, LOCAL_READ, LOCAL_WRITE } from "@wirecat/cli-core/cli"
+import { type AccountRemoval, accountRemoveCommand, LOCAL_READ, LOCAL_WRITE } from "@wirecat/cli-core"
 import { Command } from "commander"
 import { PROVIDER_NAME } from "../call-source.js"
 import { configuration } from "../config.js"

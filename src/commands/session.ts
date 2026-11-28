@@ -1,6 +1,5 @@
 import { CliError, type KeyringStore } from "@wirecat/cli-base"
 import { annotate } from "@wirecat/cli-base/commands"
-import { readSecret } from "@wirecat/cli-core"
 import {
   baseContext,
   commandWords,
@@ -16,6 +15,7 @@ import {
   profileFree,
   profilesHere,
   REMOTE_READ,
+  readSecret,
   refuseCommandName,
   refuseOffline,
   refuseUnderReadOnly,
@@ -23,7 +23,7 @@ import {
   renderAnswer,
   rootOf,
   secretInputOf,
-} from "@wirecat/cli-core/cli"
+} from "@wirecat/cli-core"
 import { Command } from "commander"
 import { beelineFor } from "../beeline.js"
 import { configuration } from "../config.js"
