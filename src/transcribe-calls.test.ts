@@ -1,5 +1,5 @@
 import { CliError } from "@wirecat/cli-base"
-import type { Pcm, TimedText } from "@wirecat/cli-core/speech"
+import type { Pcm, TimedText } from "@wirecat/cli-core"
 import { afterEach, expect, it } from "vitest"
 import { dialogue } from "./call-transcription.js"
 import { callQuery, DEFAULT_QUERY } from "./commands/transcribe.js"

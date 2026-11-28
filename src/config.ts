@@ -1,4 +1,4 @@
-import { type Configuration, commandPermissions, plain, settingsFor } from "@wirecat/cli-core/cli"
+import { type Configuration, commandPermissions, plain, settingsFor } from "@wirecat/cli-core"
 import * as v from "valibot"
 import { IDENTITY } from "./identity.js"
 import { KEEP_RECORDINGS } from "./recordings.js"

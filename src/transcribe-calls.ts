@@ -1,14 +1,14 @@
 import { isCliError } from "@wirecat/cli-base"
 import type { QueryAst } from "@wirecat/cli-base/query"
 import { BASE_REASONS, CRASH_REASON } from "@wirecat/cli-base/standards"
-import { CORE_REASONS } from "@wirecat/cli-core"
 import {
+  CORE_REASONS,
   formatMeetingReference,
   type MeetingStore,
   type MeetingTranscriptReceiptStore,
+  type Pcm,
   transcribeMeeting,
-} from "@wirecat/cli-core/meetings"
-import type { Pcm } from "@wirecat/cli-core/speech"
+} from "@wirecat/cli-core"
 import type { BeelineApi } from "./beeline-api.js"
 import { callTranscriptionSource, type Recognition, type Recognize } from "./call-transcription.js"
 import { REASONS } from "./reasons.js"

@@ -1,7 +1,7 @@
 import { Readable } from "node:stream"
 import { type KeyringStore, memoryKeyring } from "@wirecat/cli-base"
 import type { FetchLike } from "@wirecat/cli-base/http"
-import { setupProblems } from "@wirecat/cli-core/cli"
+import { setupProblems } from "@wirecat/cli-core"
 import { setupFileProblems } from "@wirecat/cli-core/testing"
 import { describe, expect, it, vi } from "vitest"
 import { configuration } from "../config.js"

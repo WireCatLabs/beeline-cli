@@ -1,7 +1,7 @@
 import { chmod, mkdir, rename, writeFile } from "node:fs/promises"
 import { join } from "node:path"
 import { resolvePaths } from "@wirecat/cli-base"
-import type { MeetingDetails, MeetingStore } from "@wirecat/cli-core/meetings"
+import type { MeetingDetails, MeetingStore } from "@wirecat/cli-core"
 import { IDENTITY } from "./identity.js"
 
 /** The setting that keeps a transcribed call's recording on this computer; true unless the owner turns it off. */

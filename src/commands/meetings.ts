@@ -1,6 +1,8 @@
 import { CliError } from "@wirecat/cli-base"
 import { annotate, metaOf } from "@wirecat/cli-base/commands"
 import {
+  addMeetingCommands,
+  addMeetingSearchCommand,
   baseContext,
   environmentOf,
   fetchesOnly,
@@ -9,12 +11,17 @@ import {
   isBody,
   itemOf,
   listOf,
+  type MeetingCommandDeps,
+  type MeetingSource,
+  type MeetingStore,
+  type MessageStore,
   NO_EFFECTS,
   openProfileStore,
   outputFor,
   overrideSharedContract,
   ProfileTokenStore,
   pagingOf,
+  parseMeetingReference,
   type RunOptions,
   readOnlyLockOf,
   readsOverMcp,
@@ -24,10 +31,7 @@ import {
   snakeKeys,
   writeNewFile,
   writesNewFileOnlyWith,
-} from "@wirecat/cli-core/cli"
-import { type MeetingSource, type MeetingStore, parseMeetingReference } from "@wirecat/cli-core/meetings"
-import { addMeetingCommands, addMeetingSearchCommand, type MeetingCommandDeps } from "@wirecat/cli-core/meetings/cli"
-import type { MessageStore } from "@wirecat/cli-core/store"
+} from "@wirecat/cli-core"
 import { Command, type Command as CommandType, InvalidArgumentError } from "commander"
 import type { BeelineApi } from "../beeline.js"
 import { configuration } from "../config.js"
@@ -197,7 +201,7 @@ export const meetingsMount = () => {
         })
       addMeetingSearchCommand(holder, {
         search: async (query, request) => {
-          const { searchMeetingHits } = await import("@wirecat/cli-core/services")
+          const { searchMeetingHits } = await import("@wirecat/cli-core")
           const { store, accountId, indexes } = need()
           return searchMeetingHits(store, query, { ...request, accountId }, { refreshIndex: indexes })
         },

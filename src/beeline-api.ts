@@ -15,7 +15,7 @@ import {
   retryableStatus,
   statusToCode,
 } from "@wirecat/cli-base/http"
-import { providerRequest } from "@wirecat/cli-core/cli"
+import { providerRequest } from "@wirecat/cli-core"
 import * as v from "valibot"
 import { DESKTOP } from "./identity.js"
 

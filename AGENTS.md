@@ -33,7 +33,7 @@ Comments marked `SAMPLE:` in the code say what to replace.
 
 Keep, the same for every service:
 
-- **Token storage**, cli-core's `ProfileTokenStore` (`@wirecat/cli-core/cli`), built in `src/context.ts`: the
+- **Token storage**, cli-core's `ProfileTokenStore` (`@wirecat/cli-core`), built in `src/context.ts`: the
   environment variable, then the keyring, then a private file; a run with moved folders never replaces the owner's
   entry (WC-SECR-4, WC-SECR-24). `need(profile)` is the one `session.missing` refusal every token CLI gives.
 - **Sign-in**, `src/commands/session.ts`: `session start | status | end | list`. The token is read hidden or from

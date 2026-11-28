@@ -1,5 +1,4 @@
-import { e164Of } from "@wirecat/cli-core"
-import type { MeetingSource, SourceMeeting, SourceParticipant } from "@wirecat/cli-core/meetings"
+import { e164Of, type MeetingSource, type SourceMeeting, type SourceParticipant } from "@wirecat/cli-core"
 import type { BeelineApi, CallRecord } from "./beeline-api.js"
 
 export const PROVIDER_NAME = "beeline"
